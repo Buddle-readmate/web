@@ -3,7 +3,7 @@
 ## 브랜치 구조
 
 ```
-main                # 항상 배포 가능한 상태 (Firebase Hosting 배포 대상)
+main                # 항상 배포 가능한 상태 (Vercel Production 배포 대상)
  └─ develop         # 다음 배포 전 통합 브랜치
      ├─ feature/
      ├─ feature/
@@ -20,7 +20,7 @@ main                # 항상 배포 가능한 상태 (Firebase Hosting 배포 �
 ```
 feature/이슈번호-화면-기능        예: feature/1-onboarding-wbti-test
 fix/이슈번호-버그내용             예: fix/2-map-search-result-missing
-chore/이슈번호-작업내용           예: chore/3-firebase-initial-setup
+chore/이슈번호-작업내용           예: chore/3-router-setup
 ```
 
 ## 작업 순서
@@ -41,25 +41,27 @@ chore/이슈번호-작업내용           예: chore/3-firebase-initial-setup
 ## 커밋 메시지 컨벤션
 
 **Squash and merge를 사용하므로, `develop`에 실제로 남는 커밋 메시지는 PR 제목이에요.**
+
 - feature 브랜치 안에서 작업할 때 개별 커밋 메시지는 편하게 적어도 됨 (`wip`, `수정` 등도 OK — 어차피 병합되면서 하나로 합쳐짐)
 - 대신 **PR 제목은 반드시 아래 컨벤션에 맞게** 작성하기 → 이게 곧 `develop`/`main`의 커밋 히스토리가 됨
 
 타입은 아래 표 기준으로 사용.
 
-| 타입 | 의미 | 예시 |
-|---|---|---|
-| `feat` | 새 기능/화면 추가 | `feat: 온보딩 화면 구현` |
-| `fix` | 버그 수정 | `fix: 캘린더 날짜 선택 시 오류 수정` |
-| `style` | 코드 동작에 영향 없는 스타일/포맷 변경 (레이아웃, 색상, 여백 등 UI 스타일 포함) | `style: 홈 화면 반응형 레이아웃 조정` |
-| `refactor` | 기능 변화 없이 코드 구조 개선 | `refactor: PlaceThumbCard 공용 컴포넌트로 분리` |
-| `chore` | 빌드/설정/패키지 등 기타 작업 | `chore: Firebase 초기 설정` |
-| `docs` | 문서 추가/수정 | `docs: README 업데이트` |
-| `test` | 테스트 코드 추가/수정 | `test: 유형검사 답변 저장 로직 테스트 추가` |
-| `perf` | 성능 개선 | `perf: 지도 검색 쿼리 최적화` |
-| `remove` | 파일/코드/기능 삭제 | `remove: 사용하지 않는 더미 데이터 삭제` |
-| `merge` | 브랜치 병합 (주로 자동 생성됨) | `merge: develop into feature/map-search` |
+| 타입       | 의미                                                                            | 예시                                            |
+| ---------- | ------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `feat`     | 새 기능/화면 추가                                                               | `feat: 온보딩 화면 구현`                        |
+| `fix`      | 버그 수정                                                                       | `fix: 캘린더 날짜 선택 시 오류 수정`            |
+| `style`    | 코드 동작에 영향 없는 스타일/포맷 변경 (레이아웃, 색상, 여백 등 UI 스타일 포함) | `style: 홈 화면 반응형 레이아웃 조정`           |
+| `refactor` | 기능 변화 없이 코드 구조 개선                                                   | `refactor: PlaceThumbCard 공용 컴포넌트로 분리` |
+| `chore`    | 빌드/설정/패키지 등 기타 작업                                                   | `chore: Vercel 배포 설정`                       |
+| `docs`     | 문서 추가/수정                                                                  | `docs: README 업데이트`                         |
+| `test`     | 테스트 코드 추가/수정                                                           | `test: 유형검사 답변 저장 로직 테스트 추가`     |
+| `perf`     | 성능 개선                                                                       | `perf: 지도 검색 쿼리 최적화`                   |
+| `remove`   | 파일/코드/기능 삭제                                                             | `remove: 사용하지 않는 더미 데이터 삭제`        |
+| `merge`    | 브랜치 병합 (주로 자동 생성됨)                                                  | `merge: develop into feature/map-search`        |
 
 ### 작성 팁
+
 - 한 커밋에 여러 타입 섞이면 커밋 나누기 (예: 기능 추가 + 오타 수정은 따로)
 - 내용은 한글로 편하게, 무엇을 했는지 명확하게만 적으면 충분
 - 이슈 번호 있으면 뒤에 붙이기: `feat: 지도 상세페이지 구현 (#12)`
@@ -67,7 +69,7 @@ chore/이슈번호-작업내용           예: chore/3-firebase-initial-setup
 ## 병합 주기
 
 - **feature → develop**: 화면 하나 완성될 때마다 수시로 (미루지 말 것)
-- **develop → main**: 주 1회 (매주 금요일 등 정해두면 좋음) — 이때 배포까지 같이 진행
+- **develop → main**: 주 1회 (매주 금요일 등 정해두면 좋음) — `main`에 병합되면 Vercel이 자동 배포
 
 ## 충돌 방지 팁
 

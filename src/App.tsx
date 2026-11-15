@@ -3,6 +3,7 @@ import CalendarPage from '@/pages/calendar/CalendarPage'
 import HomePage from '@/pages/home/HomePage'
 import MyPage from '@/pages/my/MyPage'
 import OnboardingPage from '@/pages/onboarding/OnboardingPage'
+import PolicyPage from '@/pages/policy/PolicyPage'
 import RoomCreatePage from '@/pages/rooms/RoomCreatePage'
 import RoomDetailPage from '@/pages/rooms/RoomDetailPage'
 import RoomJoinPage from '@/pages/rooms/RoomJoinPage'
@@ -17,6 +18,8 @@ function App() {
       <Routes>
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/terms" element={<PolicyPage policyId="terms" />} />
+        <Route path="/privacy" element={<PolicyPage policyId="privacy" />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/shelf" element={<ShelfPage />} />
         <Route path="/calendar" element={<CalendarPage />} />

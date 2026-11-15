@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import PolicyView from '@/components/policy/PolicyView'
 import Button from '@/components/shared/Button'
 import NicknameInput from '@/components/signup/NicknameInput'
 import ProfileSelector from '@/components/signup/ProfileSelector'
@@ -8,6 +9,8 @@ import { NICKNAME_MIN, TERMS, type ProfileId, type TermId } from '@/components/s
 import StepIndicator from '@/components/signup/StepIndicator'
 import StepTitle from '@/components/signup/StepTitle'
 import TermsAgreement from '@/components/signup/TermsAgreement'
+import { POLICIES } from '@/constants/policies'
+import { usePolicyParam } from '@/hooks/usePolicyParam'
 import { useAuthStore } from '@/stores/authStore'
 
 const STEP = { TERMS: 0, NICKNAME: 1, PROFILE: 2, COMPLETE: 3 } as const
@@ -27,6 +30,8 @@ function SignupPage() {
   // 단계를 주소(?step=)에 남겨서 휴대폰·브라우저 뒤로가기로 이전 단계로 돌아갈 수 있게 함
   const [searchParams, setSearchParams] = useSearchParams()
   const step = parseStep(searchParams.get('step'))
+  // 약관 상세는 ?doc= 로 같은 화면 위에 띄움 (페이지 이동이 없어서 체크한 약관이 유지됨)
+  const { openedPolicy, openPolicy, closePolicy } = usePolicyParam()
 
   const isSignedUp = useAuthStore((state) => state.isSignedUp)
   const completeSignup = useAuthStore((state) => state.completeSignup)
@@ -104,7 +109,11 @@ function SignupPage() {
             {step === STEP.TERMS && (
               <>
                 <StepTitle title="약관에 동의해주세요" />
-                <TermsAgreement checked={agreedTerms} onChange={setAgreedTerms} />
+                <TermsAgreement
+                  checked={agreedTerms}
+                  onChange={setAgreedTerms}
+                  onOpenPolicy={openPolicy}
+                />
               </>
             )}
             {step === STEP.NICKNAME && (
@@ -139,6 +148,8 @@ function SignupPage() {
           </Button>
         </footer>
       </div>
+
+      {openedPolicy && <PolicyView document={POLICIES[openedPolicy]} onClose={closePolicy} />}
     </div>
   )
 }

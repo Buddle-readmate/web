@@ -3,6 +3,9 @@ import { Navigate, useSearchParams } from 'react-router-dom'
 import OnboardingHeader from '@/components/onboarding/OnboardingHeader'
 import OnboardingIntro from '@/components/onboarding/OnboardingIntro'
 import OnboardingLogin from '@/components/onboarding/OnboardingLogin'
+import PolicyView from '@/components/policy/PolicyView'
+import { POLICIES } from '@/constants/policies'
+import { usePolicyParam } from '@/hooks/usePolicyParam'
 import { useAuthStore } from '@/stores/authStore'
 
 const SLIDES = [
@@ -25,8 +28,12 @@ const LOGIN_STEP = SLIDES.length
 function OnboardingPage() {
   const [searchParams] = useSearchParams()
   const isSignedUp = useAuthStore((state) => state.isSignedUp)
+  const { openedPolicy, openPolicy, closePolicy } = usePolicyParam()
   // ?step=login 으로 들어오면 (회원가입에서 뒤로가기 등) 바로 로그인 화면
-  const [step, setStep] = useState(searchParams.get('step') === 'login' ? LOGIN_STEP : 0)
+  // ?doc= 가 있으면 로그인 화면에서 약관을 연 상태로 새로고침한 것이므로 로그인 화면
+  const [step, setStep] = useState(
+    searchParams.get('step') === 'login' || openedPolicy ? LOGIN_STEP : 0,
+  )
   const isLoginStep = step === LOGIN_STEP
 
   // 가입을 마친 뒤 뒤로가기로 다시 들어온 경우
@@ -48,7 +55,7 @@ function OnboardingPage() {
         />
 
         {isLoginStep ? (
-          <OnboardingLogin />
+          <OnboardingLogin onOpenPolicy={openPolicy} />
         ) : (
           <OnboardingIntro
             title={SLIDES[step].title}
@@ -59,6 +66,8 @@ function OnboardingPage() {
           />
         )}
       </div>
+
+      {openedPolicy && <PolicyView document={POLICIES[openedPolicy]} onClose={closePolicy} />}
     </div>
   )
 }

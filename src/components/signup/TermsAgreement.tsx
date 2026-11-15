@@ -1,17 +1,19 @@
-import { Link } from 'react-router-dom'
 import icCheckCircleOff from '@/assets/icons/ic-check-circle-off.svg'
 import icCheckCircleOn from '@/assets/icons/ic-check-circle-on.svg'
 import icCheckOff from '@/assets/icons/ic-check-off.svg'
 import icCheckOn from '@/assets/icons/ic-check-on.svg'
 import icRight from '@/assets/icons/ic-right.svg'
 import { TERMS, type TermId } from '@/components/signup/signupOptions'
+import type { PolicyId } from '@/types/policy'
 
 type TermsAgreementProps = {
   checked: TermId[]
   onChange: (checked: TermId[]) => void
+  /** 약관 상세 열기 (페이지 이동 없이 회원가입 화면 위에 띄움) */
+  onOpenPolicy: (policyId: PolicyId) => void
 }
 
-function TermsAgreement({ checked, onChange }: TermsAgreementProps) {
+function TermsAgreement({ checked, onChange, onOpenPolicy }: TermsAgreementProps) {
   const isAllChecked = checked.length === TERMS.length
 
   const toggleAll = () => onChange(isAllChecked ? [] : TERMS.map((term) => term.id))
@@ -44,10 +46,14 @@ function TermsAgreement({ checked, onChange }: TermsAgreementProps) {
                 <img src={isChecked ? icCheckOn : icCheckOff} alt="" className="size-4" />
                 {term.label}
               </button>
-              {'detailPath' in term ? (
-                <Link to={term.detailPath} aria-label={`${term.label} 자세히 보기`}>
+              {'policyId' in term ? (
+                <button
+                  type="button"
+                  aria-label={`${term.label} 자세히 보기`}
+                  onClick={() => onOpenPolicy(term.policyId)}
+                >
                   <img src={icRight} alt="" className="size-4" />
-                </Link>
+                </button>
               ) : (
                 <span className="size-4" aria-hidden />
               )}

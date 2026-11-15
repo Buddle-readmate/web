@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { Navigate, useSearchParams } from 'react-router-dom'
 import OnboardingHeader from '@/components/onboarding/OnboardingHeader'
 import OnboardingIntro from '@/components/onboarding/OnboardingIntro'
 import OnboardingLogin from '@/components/onboarding/OnboardingLogin'
+import { useAuthStore } from '@/stores/authStore'
 
 const SLIDES = [
   {
@@ -21,8 +23,14 @@ const SLIDES = [
 const LOGIN_STEP = SLIDES.length
 
 function OnboardingPage() {
-  const [step, setStep] = useState(0)
+  const [searchParams] = useSearchParams()
+  const isSignedUp = useAuthStore((state) => state.isSignedUp)
+  // ?step=login 으로 들어오면 (회원가입에서 뒤로가기 등) 바로 로그인 화면
+  const [step, setStep] = useState(searchParams.get('step') === 'login' ? LOGIN_STEP : 0)
   const isLoginStep = step === LOGIN_STEP
+
+  // 가입을 마친 뒤 뒤로가기로 다시 들어온 경우
+  if (isSignedUp) return <Navigate to="/" replace />
 
   const goBack = () => setStep((prev) => prev - 1)
   const goNext = () => setStep((prev) => prev + 1)

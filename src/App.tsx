@@ -9,12 +9,14 @@ import RoomJoinPage from '@/pages/rooms/RoomJoinPage'
 import RoomListPage from '@/pages/rooms/RoomListPage'
 import StoryDetailPage from '@/pages/rooms/StoryDetailPage'
 import ShelfPage from '@/pages/shelf/ShelfPage'
+import SignupPage from '@/pages/signup/SignupPage'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/onboarding" element={<OnboardingPage />} />
+        <Route path="/signup" element={<SignupPage />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/shelf" element={<ShelfPage />} />
         <Route path="/calendar" element={<CalendarPage />} />

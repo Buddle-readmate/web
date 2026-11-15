@@ -1,7 +1,7 @@
 export const TERMS = [
   { id: 'age', label: '(필수) 만 14세 이상입니다.' },
-  { id: 'service', label: '(필수) 서비스 이용 약관에 동의합니다.', detailPath: '/terms' },
-  { id: 'privacy', label: '(필수) 개인정보 수집 및 이용에 동의합니다.', detailPath: '/privacy' },
+  { id: 'service', label: '(필수) 서비스 이용 약관에 동의합니다.', policyId: 'terms' },
+  { id: 'privacy', label: '(필수) 개인정보 수집 및 이용에 동의합니다.', policyId: 'privacy' },
 ] as const
 
 export type TermId = (typeof TERMS)[number]['id']

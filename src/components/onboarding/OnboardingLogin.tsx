@@ -1,7 +1,13 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import SocialLoginButton from '@/components/onboarding/SocialLoginButton'
+import type { PolicyId } from '@/types/policy'
 
-function OnboardingLogin() {
+type OnboardingLoginProps = {
+  /** 약관 상세 열기 (페이지 이동 없이 온보딩 화면 위에 띄움) */
+  onOpenPolicy: (policyId: PolicyId) => void
+}
+
+function OnboardingLogin({ onOpenPolicy }: OnboardingLoginProps) {
   const navigate = useNavigate()
   const goSignup = () => {
     // 회원가입에서 뒤로가기 했을 때 첫 슬라이드가 아니라 이 로그인 화면으로 돌아오도록 현재 기록에 표시
@@ -22,13 +28,13 @@ function OnboardingLogin() {
 
       <div className="flex w-full flex-col items-center gap-2">
         <p className="flex gap-0.5 text-caption whitespace-nowrap text-icon-secondary">
-          <Link to="/terms" className="underline">
+          <button type="button" onClick={() => onOpenPolicy('terms')} className="underline">
             이용약관
-          </Link>
+          </button>
           <span>및</span>
-          <Link to="/privacy" className="underline">
+          <button type="button" onClick={() => onOpenPolicy('privacy')} className="underline">
             개인정보 처리방침
-          </Link>
+          </button>
           <span>에 동의하고 계속</span>
         </p>
         <div className="flex w-full flex-col gap-2 lg:gap-3">

@@ -1,6 +1,24 @@
 @import 'tailwindcss';
 @import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 
+/* 얇은 스크롤바 (약관 모달 시안: 폭 4px, 회색 막대) */
+@utility scrollbar-slim {
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    background: var(--color-action-disabled);
+  }
+  @supports not selector(::-webkit-scrollbar) {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-action-disabled) transparent;
+  }
+}
+
 @theme {
   /* 폰트 */
   --font-sans:
@@ -26,12 +44,23 @@
   --color-border-green: #bad65c;
   --color-border-error: #ff2129;
   --color-text-error: #ff2129;
+  --color-dim: rgb(45 56 18 / 0.1);
 
   /* 모바일 글자 (m-) */
   --text-m-head-l: 24px;
   --text-m-head-l--line-height: 34px;
   --text-m-head-l--letter-spacing: -0.5px;
   --text-m-head-l--font-weight: 600;
+
+  --text-m-head-m: 20px;
+  --text-m-head-m--line-height: 28px;
+  --text-m-head-m--letter-spacing: -0.4px;
+  --text-m-head-m--font-weight: 600;
+
+  --text-m-label-m: 16px;
+  --text-m-label-m--line-height: 22px;
+  --text-m-label-m--letter-spacing: -0.3px;
+  --text-m-label-m--font-weight: 600;
 
   --text-m-body-l: 16px;
   --text-m-body-l--line-height: 22px;
@@ -73,6 +102,11 @@
   --text-w-head-m--line-height: 34px;
   --text-w-head-m--letter-spacing: -0.5px;
   --text-w-head-m--font-weight: 600;
+
+  --text-w-label-m: 17px;
+  --text-w-label-m--line-height: 24px;
+  --text-w-label-m--letter-spacing: -0.3px;
+  --text-w-label-m--font-weight: 600;
 
   --text-w-body-m: 15px;
   --text-w-body-m--line-height: 22px;

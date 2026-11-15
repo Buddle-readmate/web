@@ -45,6 +45,28 @@
   --color-border-error: #ff2129;
   --color-text-error: #ff2129;
   --color-dim: rgb(45 56 18 / 0.1);
+  --color-surface-brown: #f8f5e6;
+  --color-surface-green: #ebf7bd;
+  --color-text-green: #97b72f;
+  --color-text-secondary-brown: #605a49;
+  --color-text-weak-brown: #ada486;
+  --color-icon-weak: #dadace;
+  --color-gray-200: #f1f1e6;
+  --color-brown-700: #79725b;
+  /* 독서 잔디 단계 (1~4) */
+  --color-green-200: #ebf7bd;
+  --color-green-300: #dfef9f;
+  --color-green-400: #bad65c;
+  --color-green-500: #97b72f;
+  --color-green-600: #839e2a;
+
+  /* 화면 기준점: 웹 시안 너비(1440px) 이상 → desktop: */
+  --breakpoint-desktop: 90rem;
+
+  /* 그림자 */
+  --shadow-weak: 0 0 15px 0 rgb(45 56 18 / 0.05);
+  --shadow-nav-m: 0 0 25px 0 rgb(45 56 18 / 0.2);
+  --shadow-nav-w: 0 0 26.6px 0 rgb(125 122 115 / 0.17);
 
   /* 모바일 글자 (m-) */
   --text-m-head-l: 24px;

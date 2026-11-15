@@ -2,7 +2,7 @@
 name: Feature
 about: 새 기능/화면 작업
 title: '[Feature] '
-labels: enhancement
+labels: feat
 assignees: ''
 ---
 

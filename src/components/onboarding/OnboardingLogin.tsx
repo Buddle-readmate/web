@@ -3,7 +3,11 @@ import SocialLoginButton from '@/components/onboarding/SocialLoginButton'
 
 function OnboardingLogin() {
   const navigate = useNavigate()
-  const goSignup = () => navigate('/signup')
+  const goSignup = () => {
+    // 회원가입에서 뒤로가기 했을 때 첫 슬라이드가 아니라 이 로그인 화면으로 돌아오도록 현재 기록에 표시
+    navigate('/onboarding?step=login', { replace: true })
+    navigate('/signup')
+  }
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-8 px-6 pb-16 lg:flex-none lg:items-stretch lg:gap-16 lg:p-0">

@@ -6,7 +6,8 @@ type NicknameInputProps = {
 }
 
 function NicknameInput({ value, onChange }: NicknameInputProps) {
-  const hasError = value.length > 0 && value.length < NICKNAME_MIN
+  // 공백만 입력하거나 앞뒤 공백을 빼면 2자가 안 되는 경우도 오류
+  const hasError = value.length > 0 && value.trim().length < NICKNAME_MIN
 
   return (
     <div className="flex flex-col gap-2">

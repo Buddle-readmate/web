@@ -1,0 +1,50 @@
+import { useNavigate } from 'react-router-dom'
+import SocialLoginButton from '@/components/onboarding/SocialLoginButton'
+import type { PolicyId } from '@/types/policy'
+
+type OnboardingLoginProps = {
+  /** 약관 상세 열기 (페이지 이동 없이 온보딩 화면 위에 띄움) */
+  onOpenPolicy: (policyId: PolicyId) => void
+}
+
+function OnboardingLogin({ onOpenPolicy }: OnboardingLoginProps) {
+  const navigate = useNavigate()
+  const goSignup = () => {
+    // 회원가입에서 뒤로가기 했을 때 첫 슬라이드가 아니라 이 로그인 화면으로 돌아오도록 현재 기록에 표시
+    navigate('/onboarding?step=login', { replace: true })
+    navigate('/signup')
+  }
+
+  return (
+    <main className="flex flex-1 flex-col items-center justify-center gap-8 px-6 pb-16 lg:flex-none lg:items-stretch lg:gap-16 lg:p-0">
+      {/* 모바일 로고·일러스트 자리 (PC는 왼쪽 큰 박스) */}
+      <div className="h-12 w-[140px] shrink-0 rounded-2xl bg-surface-white lg:hidden" />
+      <div className="h-60 w-full shrink-0 rounded-2xl bg-surface-white lg:hidden" />
+
+      <h1 className="hidden text-w-head-l text-text-default lg:block">
+        <span className="block">카카오·구글로</span>
+        <span className="block">3초 만에 시작해요</span>
+      </h1>
+
+      <div className="flex w-full flex-col items-center gap-2">
+        <p className="flex gap-0.5 text-caption whitespace-nowrap text-icon-secondary">
+          <button type="button" onClick={() => onOpenPolicy('terms')} className="underline">
+            이용약관
+          </button>
+          <span>및</span>
+          <button type="button" onClick={() => onOpenPolicy('privacy')} className="underline">
+            개인정보 처리방침
+          </button>
+          <span>에 동의하고 계속</span>
+        </p>
+        <div className="flex w-full flex-col gap-2 lg:gap-3">
+          {/* TODO: 백엔드 OAuth 준비되면 로그인 연결 (지금은 임시로 회원가입으로 이동) */}
+          <SocialLoginButton provider="kakao" onClick={goSignup} />
+          <SocialLoginButton provider="google" onClick={goSignup} />
+        </div>
+      </div>
+    </main>
+  )
+}
+
+export default OnboardingLogin

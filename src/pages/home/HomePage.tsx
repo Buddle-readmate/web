@@ -18,15 +18,14 @@ function HomePage() {
   const openNotifications = () => panel.open('notifications')
 
   return (
-    <div className="min-h-dvh bg-surface-page">
+    <div>
       <div className="mx-auto max-w-[1440px]">
         <HomeHeader
           hasUnreadNotification={data.hasUnreadNotification}
           onOpenNotifications={openNotifications}
         />
 
-        {/* 아래 여백: 떠 있는 탭바(높이 + 아래 52px)에 내용이 가리지 않도록 */}
-        <main className="flex flex-col gap-4 px-6 pt-6 pb-[148px] lg:gap-8 lg:px-10 lg:pt-9 lg:pb-[184px] desktop:px-[100px]">
+        <main className="flex flex-col gap-4 px-6 pt-6 pb-6 lg:gap-8 lg:px-10 lg:pt-9 lg:pb-9 desktop:px-[100px]">
           <div className="flex flex-col gap-1">
             <h2 className="text-m-head-l text-text-default lg:text-w-head-l">
               {data.nickname}님, 반가워요!

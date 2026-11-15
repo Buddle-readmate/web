@@ -1,7 +1,10 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import SocialLoginButton from '@/components/onboarding/SocialLoginButton'
 
 function OnboardingLogin() {
+  const navigate = useNavigate()
+  const goSignup = () => navigate('/signup')
+
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-8 px-6 pb-16 lg:flex-none lg:items-stretch lg:gap-16 lg:p-0">
       {/* 모바일 로고·일러스트 자리 (PC는 왼쪽 큰 박스) */}
@@ -25,9 +28,9 @@ function OnboardingLogin() {
           <span>에 동의하고 계속</span>
         </p>
         <div className="flex w-full flex-col gap-2 lg:gap-3">
-          {/* TODO: 백엔드 OAuth 준비되면 로그인 연결 */}
-          <SocialLoginButton provider="kakao" />
-          <SocialLoginButton provider="google" />
+          {/* TODO: 백엔드 OAuth 준비되면 로그인 연결 (지금은 임시로 회원가입으로 이동) */}
+          <SocialLoginButton provider="kakao" onClick={goSignup} />
+          <SocialLoginButton provider="google" onClick={goSignup} />
         </div>
       </div>
     </main>

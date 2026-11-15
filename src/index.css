@@ -19,6 +19,13 @@
   --color-icon-default: #373732;
   --color-icon-secondary: #c4c4b9;
   --color-kakao: #ffe057;
+  --color-surface-gray-light: #f8f8ef;
+  --color-green-100: #f3fbd4;
+  --color-action-disabled: #dadace;
+  --color-border-default: #f8f8ef;
+  --color-border-green: #bad65c;
+  --color-border-error: #ff2129;
+  --color-text-error: #ff2129;
 
   /* 모바일 글자 (m-) */
   --text-m-head-l: 24px;
@@ -30,6 +37,16 @@
   --text-m-body-l--line-height: 22px;
   --text-m-body-l--letter-spacing: -0.3px;
   --text-m-body-l--font-weight: 400;
+
+  --text-m-body-m: 14px;
+  --text-m-body-m--line-height: 20px;
+  --text-m-body-m--letter-spacing: -0.3px;
+  --text-m-body-m--font-weight: 400;
+
+  --text-m-caption: 12px;
+  --text-m-caption--line-height: 16px;
+  --text-m-caption--letter-spacing: -0.3px;
+  --text-m-caption--font-weight: 500;
 
   --text-m-label-l: 18px;
   --text-m-label-l--line-height: 26px;
@@ -51,6 +68,21 @@
   --text-w-body-l--line-height: 24px;
   --text-w-body-l--letter-spacing: -0.3px;
   --text-w-body-l--font-weight: 400;
+
+  --text-w-head-m: 24px;
+  --text-w-head-m--line-height: 34px;
+  --text-w-head-m--letter-spacing: -0.5px;
+  --text-w-head-m--font-weight: 600;
+
+  --text-w-body-m: 15px;
+  --text-w-body-m--line-height: 22px;
+  --text-w-body-m--letter-spacing: -0.3px;
+  --text-w-body-m--font-weight: 400;
+
+  --text-w-caption: 13px;
+  --text-w-caption--line-height: 18px;
+  --text-w-caption--letter-spacing: -0.3px;
+  --text-w-caption--font-weight: 500;
 
   --text-w-label-l: 19px;
   --text-w-label-l--line-height: 26px;

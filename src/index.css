@@ -1,0 +1,70 @@
+@import 'tailwindcss';
+@import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
+
+@theme {
+  /* 폰트 */
+  --font-sans:
+    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  /* 색상 */
+  --color-surface-page: #fefef7;
+  --color-surface-white: #ffffff;
+  --color-surface-gray: #ebebe1;
+  --color-action-green: #97b72f;
+  --color-border-strong: #f1f1e6;
+  --color-text-default: #373732;
+  --color-text-secondary: #79796f;
+  --color-text-weak: #c4c4b9;
+  --color-text-contrast: #ffffff;
+  --color-icon-default: #373732;
+  --color-icon-secondary: #c4c4b9;
+  --color-kakao: #ffe057;
+
+  /* 모바일 글자 (m-) */
+  --text-m-head-l: 24px;
+  --text-m-head-l--line-height: 34px;
+  --text-m-head-l--letter-spacing: -0.5px;
+  --text-m-head-l--font-weight: 600;
+
+  --text-m-body-l: 16px;
+  --text-m-body-l--line-height: 22px;
+  --text-m-body-l--letter-spacing: -0.3px;
+  --text-m-body-l--font-weight: 400;
+
+  --text-m-label-l: 18px;
+  --text-m-label-l--line-height: 26px;
+  --text-m-label-l--letter-spacing: -0.4px;
+  --text-m-label-l--font-weight: 600;
+
+  --text-m-label-s: 14px;
+  --text-m-label-s--line-height: 20px;
+  --text-m-label-s--letter-spacing: -0.3px;
+  --text-m-label-s--font-weight: 600;
+
+  /* pc 글자 (w-) */
+  --text-w-head-l: 32px;
+  --text-w-head-l--line-height: 42px;
+  --text-w-head-l--letter-spacing: -0.5px;
+  --text-w-head-l--font-weight: 600;
+
+  --text-w-body-l: 17px;
+  --text-w-body-l--line-height: 24px;
+  --text-w-body-l--letter-spacing: -0.3px;
+  --text-w-body-l--font-weight: 400;
+
+  --text-w-label-l: 19px;
+  --text-w-label-l--line-height: 26px;
+  --text-w-label-l--letter-spacing: -0.4px;
+  --text-w-label-l--font-weight: 600;
+
+  --text-w-label-s: 15px;
+  --text-w-label-s--line-height: 22px;
+  --text-w-label-s--letter-spacing: -0.3px;
+  --text-w-label-s--font-weight: 600;
+
+  /* 모바일, 웹 글자 (공통) */
+  --text-caption: 13px;
+  --text-caption--line-height: 18px;
+  --text-caption--letter-spacing: -0.3px;
+  --text-caption--font-weight: 500;
+}

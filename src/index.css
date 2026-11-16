@@ -38,7 +38,6 @@
   --color-icon-secondary: #c4c4b9;
   --color-kakao: #ffe057;
   --color-surface-gray-light: #f8f8ef;
-  --color-green-100: #f3fbd4;
   --color-action-disabled: #dadace;
   --color-border-default: #f8f8ef;
   --color-border-green: #bad65c;
@@ -51,14 +50,53 @@
   --color-text-secondary-brown: #605a49;
   --color-text-weak-brown: #ada486;
   --color-icon-weak: #dadace;
-  --color-gray-200: #f1f1e6;
-  --color-brown-700: #79725b;
-  /* 독서 잔디 단계 (1~4) */
+
+  /* 팔레트 (피그마 Design System > Color) */
+  --color-green-50: #fbffeb;
+  --color-green-100: #f3fbd4;
   --color-green-200: #ebf7bd;
   --color-green-300: #dfef9f;
   --color-green-400: #bad65c;
   --color-green-500: #97b72f;
   --color-green-600: #839e2a;
+  --color-green-700: #6f8720;
+  --color-green-800: #5f7614;
+  --color-green-900: #485a0d;
+
+  --color-brown-50: #fefef7;
+  --color-brown-100: #f8f5e6;
+  --color-brown-200: #efe9d0;
+  --color-brown-300: #e0dabe;
+  --color-brown-400: #cbc3a3;
+  --color-brown-500: #ada486;
+  --color-brown-600: #988e70;
+  --color-brown-700: #79725b;
+  --color-brown-800: #605a49;
+  --color-brown-900: #464337;
+
+  --color-gray-50: #fdfdfb;
+  --color-gray-100: #f8f8ef;
+  --color-gray-200: #f1f1e6;
+  --color-gray-300: #ebebe1;
+  --color-gray-400: #dadace;
+  --color-gray-500: #c4c4b9;
+  --color-gray-600: #a4a498;
+  --color-gray-700: #79796f;
+  --color-gray-800: #55554c;
+  --color-gray-900: #373732;
+
+  --color-red-50: #ffeaec;
+  --color-red-200: #ffc0ba;
+  --color-red-500: #ff2129;
+  --color-red-600: #e21119;
+  --color-red-700: #bd0101;
+
+  /* 홈 책장 책등 (W/Shelf/Row 일러스트 전용, 팔레트에 없는 색) */
+  --color-book-red: #f26353;
+  --color-book-red-dark: #dc4d3d;
+  --color-book-yellow: #f9dc74;
+  --color-book-yellow-dark: #efc941;
+  --color-book-green-dark: #a3bf46;
 
   /* 화면 기준점: 웹 시안 너비(1440px) 이상 → desktop: */
   --breakpoint-desktop: 90rem;

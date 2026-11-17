@@ -67,9 +67,9 @@ export const HOME_MOCK: HomeData = {
     { id: 2, title: '소년이 온다' },
     { id: 3, title: '달러구트 꿈백화점' },
     { id: 4, title: '아몬드' },
-    { id: 5, title: '프로젝트 헤일메리', spineColor: '#b6a974' },
-    { id: 6, title: '모순', spineColor: '#d3cd8d' },
-    { id: 7, title: '어린왕자', spineColor: '#bad65c' },
+    { id: 5, title: '프로젝트 헤일메리' },
+    { id: 6, title: '모순' },
+    { id: 7, title: '어린왕자' },
   ],
 }
 

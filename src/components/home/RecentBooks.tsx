@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import SectionHeader from '@/components/home/SectionHeader'
 import type { RecentBook } from '@/types/home'
@@ -60,15 +61,47 @@ type RecentBooksProps = {
 
 function BookCover({ book, className = '' }: { book?: RecentBook; className?: string }) {
   return book?.coverUrl ? (
-    <img src={book.coverUrl} alt="" className={`object-cover ${className}`} />
+    <img src={book.coverUrl} alt="" loading="lazy" className={`object-cover ${className}`} />
   ) : (
     <span className={`block bg-border-strong ${className}`} />
   )
 }
 
+/**
+ * 마우스 휠(세로)로도 가로 스크롤되게 함 (스크롤바를 숨겨서 트랙패드가 없으면 넘길 방법이 없음)
+ * 양 끝에 닿으면 페이지 세로 스크롤로 넘겨줌
+ */
+function useWheelToHorizontalScroll<T extends HTMLElement>() {
+  const ref = useRef<T>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    const handleWheel = (event: WheelEvent) => {
+      // 트랙패드 가로 스와이프·Shift + 휠은 브라우저 기본 동작 그대로
+      if (event.shiftKey || Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return
+      const maxScrollLeft = el.scrollWidth - el.clientWidth
+      if (maxScrollLeft <= 0) return
+      const atStart = el.scrollLeft <= 0 && event.deltaY < 0
+      const atEnd = el.scrollLeft >= maxScrollLeft - 1 && event.deltaY > 0
+      if (atStart || atEnd) return
+
+      event.preventDefault()
+      el.scrollLeft += event.deltaY
+    }
+
+    el.addEventListener('wheel', handleWheel, { passive: false })
+    return () => el.removeEventListener('wheel', handleWheel)
+  }, [])
+
+  return ref
+}
+
 /** 최근 읽은 책 (모바일: 표지 가로 목록 / 웹: 책장 모양) */
 function RecentBooks({ books, className = '' }: RecentBooksProps) {
   const navigate = useNavigate()
+  const shelfRef = useWheelToHorizontalScroll<HTMLDivElement>()
 
   return (
     <section className={`flex min-w-0 flex-col gap-3 lg:gap-4 ${className}`}>
@@ -100,7 +133,10 @@ function RecentBooks({ books, className = '' }: RecentBooksProps) {
       )}
 
       {/* 웹: 책장 (칸이 책장보다 좁아지면 선반·제목까지 함께 가로 스크롤) */}
-      <div className="hidden overflow-x-auto [scrollbar-width:none] lg:block [&::-webkit-scrollbar]:hidden">
+      <div
+        ref={shelfRef}
+        className="hidden overflow-x-auto [scrollbar-width:none] lg:block [&::-webkit-scrollbar]:hidden"
+      >
         <div className="flex w-max min-w-full flex-col gap-2">
           <div className="flex flex-col">
             <div className="flex items-end gap-5">
@@ -124,7 +160,7 @@ function RecentBooks({ books, className = '' }: RecentBooksProps) {
                     />
                   ))}
                   {/* 책등 장식 (표지 목록 맨 끝) */}
-                  <div className="relative h-48 w-32 shrink-0 overflow-hidden">
+                  <div aria-hidden className="relative h-48 w-32 shrink-0 overflow-hidden">
                     {SPINES.map((spine) => (
                       <span
                         key={spine.title}

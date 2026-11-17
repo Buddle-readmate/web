@@ -24,34 +24,38 @@
   --font-sans:
     'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
-  /* 색상 */
-  --color-surface-page: #fefef7;
+  /* 색상 (의미별 토큰 → 아래 팔레트 값을 참조) */
+  --color-surface-page: var(--color-brown-50);
   --color-surface-white: #ffffff;
-  --color-surface-gray: #ebebe1;
-  --color-action-green: #97b72f;
-  --color-border-strong: #f1f1e6;
-  --color-text-default: #373732;
-  --color-text-secondary: #79796f;
-  --color-text-weak: #c4c4b9;
+  --color-surface-gray: var(--color-gray-300);
+  --color-action-green: var(--color-green-500);
+  --color-border-strong: var(--color-gray-200);
+  --color-text-default: var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-700);
+  --color-text-weak: var(--color-gray-500);
   --color-text-contrast: #ffffff;
-  --color-icon-default: #373732;
-  --color-icon-secondary: #c4c4b9;
+  --color-icon-default: var(--color-gray-900);
+  --color-icon-secondary: var(--color-gray-500);
   --color-kakao: #ffe057;
-  --color-surface-gray-light: #f8f8ef;
-  --color-action-disabled: #dadace;
-  --color-border-default: #f8f8ef;
-  --color-border-green: #bad65c;
-  --color-border-error: #ff2129;
-  --color-text-error: #ff2129;
+  --color-surface-gray-light: var(--color-gray-100);
+  --color-action-disabled: var(--color-gray-400);
+  --color-border-default: var(--color-gray-100);
+  --color-border-green: var(--color-green-400);
+  --color-border-error: var(--color-red-500);
+  --color-text-error: var(--color-red-500);
   --color-dim: rgb(45 56 18 / 0.1);
-  --color-surface-brown: #f8f5e6;
-  --color-surface-green: #ebf7bd;
-  --color-text-green: #97b72f;
-  --color-text-secondary-brown: #605a49;
-  --color-text-weak-brown: #ada486;
-  --color-icon-weak: #dadace;
+  --color-surface-brown: var(--color-brown-100);
+  --color-surface-green: var(--color-green-200);
+  --color-text-green: var(--color-green-500);
+  --color-text-secondary-brown: var(--color-brown-800);
+  --color-text-weak-brown: var(--color-brown-500);
+  --color-icon-weak: var(--color-gray-400);
 
-  /* 팔레트 (피그마 Design System > Color) */
+  /* 팔레트 (피그마 Design System > Color)
+     Tailwind 기본 red/green/gray 색을 지워서, 피그마에 없는 단계(red-100 등)는 클래스가 안 생기게 함 */
+  --color-red-*: initial;
+  --color-green-*: initial;
+  --color-gray-*: initial;
   --color-green-50: #fbffeb;
   --color-green-100: #f3fbd4;
   --color-green-200: #ebf7bd;

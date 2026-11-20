@@ -86,8 +86,9 @@ export function useMouseHorizontalScroll<T extends HTMLElement>(): RefCallback<T
     }
 
     const handleWheel = (event: WheelEvent) => {
-      // 트랙패드 가로 스와이프·Shift + 휠은 브라우저 기본 동작 그대로
-      if (event.shiftKey || Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return
+      // 트랙패드 가로 스와이프·Shift + 휠·Ctrl + 휠(핀치 확대 포함)은 브라우저 기본 동작 그대로
+      if (event.shiftKey || event.ctrlKey || Math.abs(event.deltaX) >= Math.abs(event.deltaY))
+        return
       const maxScrollLeft = el.scrollWidth - el.clientWidth
       if (maxScrollLeft <= 0) return
       const atStart = el.scrollLeft <= 0 && event.deltaY < 0

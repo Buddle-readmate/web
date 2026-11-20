@@ -1,7 +1,10 @@
-import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import SectionHeader from '@/components/home/SectionHeader'
+import { useMouseHorizontalScroll } from '@/hooks/useMouseHorizontalScroll'
 import type { RecentBook } from '@/types/home'
+
+// 웹 책장에 표지로 보여줄 최근 책 수 (피그마 W/Shelf/Row: 표지 4권 + 책등 칸 = 720px)
+const SHELF_COVER_COUNT = 4
 
 // 웹 책장 마지막 칸의 책등 (피그마 W/Shelf/Row 일러스트 기준)
 // tilt: 오른쪽 아래 모서리를 기준으로 기울기 (음수 = 윗부분이 왼쪽 책에 기댐)
@@ -67,41 +70,12 @@ function BookCover({ book, className = '' }: { book?: RecentBook; className?: st
   )
 }
 
-/**
- * 마우스 휠(세로)로도 가로 스크롤되게 함 (스크롤바를 숨겨서 트랙패드가 없으면 넘길 방법이 없음)
- * 양 끝에 닿으면 페이지 세로 스크롤로 넘겨줌
- */
-function useWheelToHorizontalScroll<T extends HTMLElement>() {
-  const ref = useRef<T>(null)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-
-    const handleWheel = (event: WheelEvent) => {
-      // 트랙패드 가로 스와이프·Shift + 휠은 브라우저 기본 동작 그대로
-      if (event.shiftKey || Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return
-      const maxScrollLeft = el.scrollWidth - el.clientWidth
-      if (maxScrollLeft <= 0) return
-      const atStart = el.scrollLeft <= 0 && event.deltaY < 0
-      const atEnd = el.scrollLeft >= maxScrollLeft - 1 && event.deltaY > 0
-      if (atStart || atEnd) return
-
-      event.preventDefault()
-      el.scrollLeft += event.deltaY
-    }
-
-    el.addEventListener('wheel', handleWheel, { passive: false })
-    return () => el.removeEventListener('wheel', handleWheel)
-  }, [])
-
-  return ref
-}
-
 /** 최근 읽은 책 (모바일: 표지 가로 목록 / 웹: 책장 모양) */
 function RecentBooks({ books, className = '' }: RecentBooksProps) {
   const navigate = useNavigate()
-  const shelfRef = useWheelToHorizontalScroll<HTMLDivElement>()
+  const listRef = useMouseHorizontalScroll<HTMLUListElement>()
+  const shelfRef = useMouseHorizontalScroll<HTMLDivElement>()
+  const shelfBooks = books.slice(0, SHELF_COVER_COUNT)
 
   return (
     <section className={`flex min-w-0 flex-col gap-3 lg:gap-4 ${className}`}>
@@ -119,7 +93,10 @@ function RecentBooks({ books, className = '' }: RecentBooksProps) {
           <p className="text-m-body-m text-text-weak">책을 검색하고 나의 독서를 기록해보세요</p>
         </div>
       ) : (
-        <ul className="-mx-6 flex gap-3 overflow-x-auto px-6 [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden">
+        <ul
+          ref={listRef}
+          className="-mx-6 flex gap-3 overflow-x-auto px-6 [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden"
+        >
           {books.map((book) => (
             <li key={book.id} className="flex w-[106px] shrink-0 flex-col gap-1">
               <BookCover
@@ -152,7 +129,7 @@ function RecentBooks({ books, className = '' }: RecentBooksProps) {
                 </>
               ) : (
                 <>
-                  {books.map((book) => (
+                  {shelfBooks.map((book) => (
                     <BookCover
                       key={book.id}
                       book={book}
@@ -186,9 +163,9 @@ function RecentBooks({ books, className = '' }: RecentBooksProps) {
             <span className="h-3 w-full rounded-b-sm bg-brown-700" />
           </div>
 
-          {books.length > 0 && (
+          {shelfBooks.length > 0 && (
             <ul className="flex gap-5">
-              {books.map((book) => (
+              {shelfBooks.map((book) => (
                 <li
                   key={book.id}
                   className="w-32 shrink-0 truncate text-w-body-m font-medium text-text-default"

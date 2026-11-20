@@ -21,26 +21,29 @@ function toKey(date: Date) {
 }
 
 /**
- * 오늘이 들어 있는 주까지 최근 n주 잔디 (일요일 시작, 한 주 = 한 열)
+ * endDate('YYYY-MM-DD')가 들어 있는 주까지 n주 잔디 (일요일 시작, 한 주 = 한 열)
+ * endDate 이후 날짜(올해는 오늘 이후, 지난 해는 다음 해)는 점선 빈칸
  */
 export function getGrassWeeks(
   grass: Record<string, StreakLevel>,
   weekCount: number,
-  today = new Date(),
+  endDate: string,
 ): GrassWeek[] {
-  const end = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const [year, month, day] = endDate.split('-').map(Number)
+  const end = new Date(year, month - 1, day)
   const start = new Date(end)
   start.setDate(end.getDate() - end.getDay() - (weekCount - 1) * 7)
-  const todayKey = toKey(end)
+  const todayKey = toKey(new Date())
+  const lastKey = endDate < todayKey ? endDate : todayKey
 
   return Array.from({ length: weekCount }, (_, weekIndex) => {
     let monthStart: number | undefined
     const cells = Array.from({ length: 7 }, (_, dayIndex) => {
       const date = new Date(start)
       date.setDate(start.getDate() + weekIndex * 7 + dayIndex)
-      if (date.getDate() === 1) monthStart = date.getMonth() + 1
       const key = toKey(date)
-      return { date: key, level: grass[key] ?? 0, isFuture: key > todayKey }
+      if (date.getDate() === 1 && key <= lastKey) monthStart = date.getMonth() + 1
+      return { date: key, level: grass[key] ?? 0, isFuture: key > lastKey }
     })
     return { cells, monthStart }
   })

@@ -1,8 +1,8 @@
-import type { MyPageData } from '@/types/my'
+import type { YearStats } from '@/types/my'
 import { getGrassWeeks, getLongestStreak } from '@/utils/grass'
 
-/** 마이페이지 문구에 쓰는 값 계산 (모바일 16주 / 웹 26주 기준) */
-export function getMyStats(data: MyPageData) {
+/** 마이페이지 문구에 쓰는 값 계산 (모바일 16주·4개월 / 웹 26주·6개월 기준) */
+export function getMyStats(data: YearStats) {
   const mobileMonths = data.monthly.slice(-4)
   const webMonths = data.monthly.slice(-6)
   const current = data.monthly[data.monthly.length - 1]
@@ -10,7 +10,7 @@ export function getMyStats(data: MyPageData) {
   const hasRecords = data.monthly.some((item) => item.pages > 0)
 
   const countDays = (weekCount: number) =>
-    getGrassWeeks(data.grass, weekCount)
+    getGrassWeeks(data.grass, weekCount, data.endDate)
       .flatMap((week) => week.cells)
       .filter((cell) => cell.level > 0).length
 

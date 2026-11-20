@@ -44,13 +44,15 @@ const VARIANT = {
 
 type ReadingGrassGridProps = {
   grass: Record<string, StreakLevel>
+  /** 잔디 마지막 날짜 ('YYYY-MM-DD') */
+  endDate: string
   variant: keyof typeof VARIANT
 }
 
 /** 요일 + 월 표시가 붙은 잔디 격자 (한 열 = 한 주, 일요일 시작) */
-export function ReadingGrassGrid({ grass, variant }: ReadingGrassGridProps) {
+export function ReadingGrassGrid({ grass, endDate, variant }: ReadingGrassGridProps) {
   const v = VARIANT[variant]
-  const weeks = getGrassWeeks(grass, v.weeks)
+  const weeks = getGrassWeeks(grass, v.weeks, endDate)
   // 좁은 화면에서는 칸 크기를 유지한 채 옆으로 스크롤
   const minWidth = v.weeks * v.cell + (v.weeks - 1) * 2
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -59,7 +61,7 @@ export function ReadingGrassGrid({ grass, variant }: ReadingGrassGridProps) {
   useLayoutEffect(() => {
     const element = scrollRef.current
     if (element) element.scrollLeft = element.scrollWidth
-  }, [])
+  }, [endDate])
 
   return (
     <div className={`flex w-full items-start ${variant === 'mobile' ? 'gap-1.5' : 'gap-2'}`}>

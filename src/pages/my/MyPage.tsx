@@ -19,11 +19,13 @@ function MyPage() {
   const [data, setData] = useState(() =>
     import.meta.env.DEV && searchParams.get('mock') === 'empty' ? MY_PAGE_MOCK_EMPTY : MY_PAGE_MOCK,
   )
-  // TODO: 연도별 통계 API 연동 (지금은 연도만 바뀌고 데이터는 그대로)
+  // TODO: 연도별 통계 API 연동 (지금은 연도별 더미 데이터)
   const [year, setYear] = useState(data.years[0].year)
   // 프로필 편집·연도 선택은 ?sheet= 로 띄움 (뒤로가기로 닫힘)
   const sheet = useOverlayParam('sheet')
-  const stats = getMyStats(data)
+  const yearData = data.byYear[year]
+  const stats = getMyStats(yearData)
+  const thisYearData = data.byYear[data.years[0].year]
 
   const openProfile = () => sheet.open('profile')
   const openYear = () => sheet.open('year')
@@ -58,7 +60,7 @@ function MyPage() {
             <YearSelectButton year={year} onClick={openYear} />
           </div>
 
-          <MobileStats data={data} stats={stats} onStart={startReading} />
+          <MobileStats data={yearData} stats={stats} onStart={startReading} />
 
           <SettingsList
             yearlyGoal={data.yearlyGoal}
@@ -93,7 +95,7 @@ function MyPage() {
             </aside>
 
             <WebStatsCard
-              data={data}
+              data={yearData}
               stats={stats}
               year={year}
               onYearClick={openYear}
@@ -108,7 +110,7 @@ function MyPage() {
         <ProfileEditSheet
           nickname={data.nickname}
           yearlyGoal={data.yearlyGoal}
-          finishedThisYear={data.stats.finished}
+          finishedThisYear={thisYearData.stats.finished}
           onSave={(profile) => {
             // TODO: 프로필 저장 API 연동
             setData((prev) => ({ ...prev, ...profile }))

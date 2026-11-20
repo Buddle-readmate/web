@@ -2,10 +2,10 @@ import MonthlyBars from '@/components/my/MonthlyBars'
 import type { getMyStats } from '@/components/my/myStats'
 import { GrassLegend, ReadingGrassGrid } from '@/components/my/ReadingGrass'
 import YearSelectButton from '@/components/my/YearSelectButton'
-import type { MyPageData } from '@/types/my'
+import type { YearStats } from '@/types/my'
 
 type WebStatsCardProps = {
-  data: MyPageData
+  data: YearStats
   stats: ReturnType<typeof getMyStats>
   year: number
   onYearClick: () => void
@@ -100,7 +100,7 @@ function WebStatsCard({
               최근 26주 · {stats.webGrassDays}일 기록
             </p>
           </div>
-          <ReadingGrassGrid grass={data.grass} variant="web" />
+          <ReadingGrassGrid grass={data.grass} endDate={data.endDate} variant="web" />
           <div className="flex items-center justify-between gap-3">
             <p className="truncate text-w-caption text-text-weak-brown">
               {hasRecords

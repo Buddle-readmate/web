@@ -4,12 +4,12 @@ import MaskIcon from '@/components/shared/MaskIcon'
 import MonthlyBars from '@/components/my/MonthlyBars'
 import type { getMyStats } from '@/components/my/myStats'
 import { GrassLegend, ReadingGrassGrid } from '@/components/my/ReadingGrass'
-import type { MyPageData } from '@/types/my'
+import type { YearStats } from '@/types/my'
 
 type Tab = 'grass' | 'monthly'
 
 type MobileStatsProps = {
-  data: MyPageData
+  data: YearStats
   stats: ReturnType<typeof getMyStats>
   onStart: () => void
 }
@@ -58,7 +58,7 @@ function MobileStats({ data, stats, onStart }: MobileStatsProps) {
               {stats.mobileRange} · {stats.mobileGrassDays}일 기록
             </p>
           </div>
-          <ReadingGrassGrid grass={data.grass} variant="mobile" />
+          <ReadingGrassGrid grass={data.grass} endDate={data.endDate} variant="mobile" />
           <div className="flex items-center justify-between gap-2">
             <p className="text-m-caption text-text-secondary-brown">
               {hasRecords
@@ -97,7 +97,7 @@ function MobileStats({ data, stats, onStart }: MobileStatsProps) {
                   <span className="flex items-center gap-2">
                     <span className="text-m-label-s text-text-secondary-brown">{item.month}월</span>
                     <span className="text-m-caption text-text-weak-brown">
-                      {index === 0
+                      {index === 0 && data.isCurrentYear
                         ? `진행 중 · ${item.recordDays}일 기록`
                         : `${item.recordDays}일 기록 · ${item.finishedBooks}권 완독`}
                     </span>
@@ -124,13 +124,16 @@ function MobileStats({ data, stats, onStart }: MobileStatsProps) {
                 ? `${best.month}월에 가장 많이 읽었어요`
                 : `${best.month}월에 ${best.pages.toLocaleString()}쪽으로 가장 많이 읽었어요`}
           </p>
-          <p className="truncate text-m-caption text-text-secondary">
-            {!hasRecords
-              ? '첫 기록을 남겨보세요'
-              : tab === 'grass'
-                ? `최장 연속 ${stats.longestStreak}일 · 이번 달은 ${current.recordDays}일째 기록 중`
-                : `${current.month}월은 하루 ${data.dailyPagePace}쪽이면 목표 페이스예요`}
-          </p>
+          {/* 지난 해는 '이번 달'·'목표 페이스'가 없어서 해당 부분을 빼고 보여줌 */}
+          {(!hasRecords || tab === 'grass' || data.isCurrentYear) && (
+            <p className="truncate text-m-caption text-text-secondary">
+              {!hasRecords
+                ? '첫 기록을 남겨보세요'
+                : tab === 'grass'
+                  ? `최장 연속 ${stats.longestStreak}일${data.isCurrentYear ? ` · 이번 달은 ${current.recordDays}일째 기록 중` : ''}`
+                  : `${current.month}월은 하루 ${data.dailyPagePace}쪽이면 목표 페이스예요`}
+            </p>
+          )}
         </div>
         {!hasRecords && (
           <button

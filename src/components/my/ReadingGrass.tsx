@@ -1,4 +1,5 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useCallback, useLayoutEffect, useRef } from 'react'
+import { useMouseHorizontalScroll } from '@/hooks/useMouseHorizontalScroll'
 import type { StreakLevel } from '@/types/home'
 import { getGrassWeeks } from '@/utils/grass'
 
@@ -56,6 +57,15 @@ export function ReadingGrassGrid({ grass, endDate, variant }: ReadingGrassGridPr
   // 좁은 화면에서는 칸 크기를 유지한 채 옆으로 스크롤
   const minWidth = v.weeks * v.cell + (v.weeks - 1) * 2
   const scrollRef = useRef<HTMLDivElement>(null)
+  const mouseScrollRef = useMouseHorizontalScroll<HTMLDivElement>()
+  // 오른쪽 끝 맞춤용 ref + 마우스 휠·드래그 스크롤을 같은 요소에 연결
+  const setScrollRef = useCallback(
+    (element: HTMLDivElement | null) => {
+      scrollRef.current = element
+      return mouseScrollRef(element)
+    },
+    [mouseScrollRef],
+  )
 
   // 스크롤이 생기면 최근 주(오른쪽 끝)부터 보이게
   useLayoutEffect(() => {
@@ -77,7 +87,7 @@ export function ReadingGrassGrid({ grass, endDate, variant }: ReadingGrassGridPr
       </div>
 
       <div
-        ref={scrollRef}
+        ref={setScrollRef}
         className="min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         <div className={`flex flex-col ${v.gridGap}`} style={{ minWidth }}>

@@ -34,7 +34,7 @@ function ProfileEditSheet({
   const inputBoxClass =
     'flex h-[52px] items-center gap-3 rounded-2xl border-[1.5px] border-border-default bg-surface-white px-4 lg:h-auto lg:border-border-strong lg:p-4'
   const inputClass =
-    'min-w-0 bg-transparent text-m-body-l font-medium text-text-default outline-none lg:text-w-body-m lg:font-normal'
+    'bg-transparent text-m-body-l font-medium text-text-default outline-none lg:text-w-body-m lg:font-normal'
 
   return (
     <SheetModal
@@ -73,7 +73,7 @@ function ProfileEditSheet({
             maxLength={NICKNAME_MAX}
             onChange={(event) => setNickname(event.target.value)}
             autoComplete="off"
-            className={`flex-1 ${inputClass}`}
+            className={`min-w-0 flex-1 ${inputClass}`}
           />
           <span className="hidden text-w-caption text-text-weak lg:inline">
             {nickname.length}/{NICKNAME_MAX}
@@ -93,7 +93,7 @@ function ProfileEditSheet({
             inputMode="numeric"
             value={goal}
             onChange={(event) => setGoal(event.target.value.replace(/\D/g, '').slice(0, 3))}
-            className={`[field-sizing:content] lg:flex-1 lg:[field-sizing:fixed] ${inputClass}`}
+            className={`min-w-4 [field-sizing:content] lg:flex-1 lg:[field-sizing:fixed] ${inputClass}`}
           />
           <span className="-ml-3 text-m-body-l font-medium text-text-default lg:ml-0 lg:text-w-body-m lg:font-medium lg:text-text-secondary">
             권

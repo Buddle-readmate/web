@@ -60,7 +60,8 @@ export function getLongestStreak(grass: Record<string, StreakLevel>) {
   for (const key of keys) {
     const [year, month, day] = key.split('-').map(Number)
     const date = new Date(year, month - 1, day)
-    const isNext = prev && date.getTime() - prev.getTime() === 24 * 60 * 60 * 1000
+    // 서머타임이 있는 지역에서도 하루 차이로 보도록 반올림
+    const isNext = prev && Math.round((date.getTime() - prev.getTime()) / 86_400_000) === 1
     current = isNext ? current + 1 : 1
     longest = Math.max(longest, current)
     prev = date

@@ -102,11 +102,16 @@
   --color-book-yellow-dark: #efc941;
   --color-book-green-dark: #a3bf46;
 
+  /* 마이페이지 인사이트·연도 선택 배경 (팔레트에 없는 색) */
+  --color-surface-green-soft: #f4fae9;
+
   /* 화면 기준점: 웹 시안 너비(1440px) 이상 → desktop: */
   --breakpoint-desktop: 90rem;
 
   /* 그림자 */
   --shadow-weak: 0 0 15px 0 rgb(45 56 18 / 0.05);
+  --shadow-tab: 0 2px 6px 0 rgb(0 0 0 / 0.06);
+  --shadow-modal: 0 24px 60px 0 rgb(51 51 46 / 0.18);
   --shadow-nav-m: 0 0 25px 0 rgb(45 56 18 / 0.2);
   --shadow-nav-w: 0 0 26.6px 0 rgb(125 122 115 / 0.17);
 

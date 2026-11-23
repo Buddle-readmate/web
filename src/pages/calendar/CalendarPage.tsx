@@ -1,5 +1,111 @@
+import { useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import HomeHeader from '@/components/home/HomeHeader'
+import DayRecordPanel from '@/components/record/DayRecordPanel'
+import MonthSummary from '@/components/record/MonthSummary'
+import ReadingCalendar from '@/components/record/ReadingCalendar'
+import RecordAddSheet from '@/components/record/RecordAddSheet'
+import { useOverlayParam } from '@/hooks/useOverlayParam'
+import { CALENDAR_RECORDS_MOCK, EXCHANGE_BOOKS_MOCK } from '@/mocks/calendar'
+import type { NewReadingRecord, ReadingRecord } from '@/types/calendar'
+import { getTodayKey, parseDateKey, toDateKey } from '@/utils/calendar'
+
 function CalendarPage() {
-  return <div>캘린더</div>
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const todayKey = getTodayKey()
+  const today = parseDateKey(todayKey)
+
+  // TODO: 독서 기록 API 연동 전까지 더미 데이터 (개발 중 /calendar?mock=empty 로 빈 상태 확인)
+  const [records, setRecords] = useState<ReadingRecord[]>(() =>
+    import.meta.env.DEV && searchParams.get('mock') === 'empty' ? [] : CALENDAR_RECORDS_MOCK,
+  )
+  const [viewMonth, setViewMonth] = useState({ year: today.year, month: today.month })
+  const [selectedKey, setSelectedKey] = useState(todayKey)
+  // 기록 추가는 ?sheet=add-record 로 캘린더 위에 띄움 (뒤로가기로 닫힘)
+  const sheet = useOverlayParam('sheet')
+
+  const { year, month } = viewMonth
+  const monthPrefix = toDateKey(year, month, 1).slice(0, 8)
+  const monthRecords = records.filter((record) => record.date.startsWith(monthPrefix))
+  const monthDays = new Set(monthRecords.map((record) => record.date)).size
+  const monthPages = monthRecords.reduce((sum, r) => sum + r.endPage - r.startPage, 0)
+  const selectedRecords = records.filter((record) => record.date === selectedKey)
+
+  // 달을 옮기면 이번 달은 오늘, 다른 달은 1일을 선택
+  const moveMonth = (offset: number) => {
+    const date = new Date(year, month - 1 + offset, 1)
+    const next = { year: date.getFullYear(), month: date.getMonth() + 1 }
+    setViewMonth(next)
+    const isThisMonth = next.year === today.year && next.month === today.month
+    setSelectedKey(isThisMonth ? todayKey : toDateKey(next.year, next.month, 1))
+  }
+
+  const goToday = () => {
+    setViewMonth({ year: today.year, month: today.month })
+    setSelectedKey(todayKey)
+  }
+
+  const handleSave = (record: NewReadingRecord) => {
+    // TODO: 기록 저장 API 연동
+    setRecords((prev) => [...prev, { ...record, id: Date.now() }])
+    sheet.close()
+  }
+
+  return (
+    <div>
+      <div className="mx-auto max-w-[1440px]">
+        {/* TODO: 알림 여부는 알림 API 연동 시 공통 상태로 */}
+        <HomeHeader
+          hasUnreadNotification={false}
+          onOpenNotifications={() => navigate('/?panel=notifications')}
+        />
+
+        <main className="flex flex-col gap-6 px-6 pt-6 pb-6 lg:gap-8 lg:px-10 lg:pt-9 lg:pb-9 desktop:px-[100px]">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-m-head-l text-text-default lg:text-w-head-l">독서 캘린더</h2>
+            <p className="text-m-body-m font-medium text-text-secondary lg:text-w-body-l lg:font-medium">
+              날짜를 누르면 그날의 독서 기록을 볼 수 있어요
+            </p>
+          </div>
+
+          <MonthSummary month={month} days={monthDays} pages={monthPages} className="lg:hidden" />
+
+          {/* 모바일: 달력 → 기록 / 웹: 달력 + 오른쪽 기록 패널 320px */}
+          <div className="flex flex-col gap-6 lg:flex-row">
+            <ReadingCalendar
+              year={year}
+              month={month}
+              records={monthRecords}
+              todayKey={todayKey}
+              selectedKey={selectedKey}
+              onSelect={setSelectedKey}
+              onPrevMonth={() => moveMonth(-1)}
+              onNextMonth={() => moveMonth(1)}
+              onToday={goToday}
+              className="lg:min-w-0 lg:flex-1"
+            />
+            <DayRecordPanel
+              dateKey={selectedKey}
+              records={selectedRecords}
+              isToday={selectedKey === todayKey}
+              onAdd={() => sheet.open('add-record')}
+              className="lg:w-[320px] lg:shrink-0"
+            />
+          </div>
+        </main>
+      </div>
+
+      {sheet.value === 'add-record' && (
+        <RecordAddSheet
+          dateKey={selectedKey}
+          books={EXCHANGE_BOOKS_MOCK}
+          onSave={handleSave}
+          onClose={sheet.close}
+        />
+      )}
+    </div>
+  )
 }
 
 export default CalendarPage

@@ -35,8 +35,6 @@ export type RecentBook = {
   id: number
   title: string
   coverUrl?: string
-  /** 표지 없이 책등으로 보여줄 때 색 */
-  spineColor?: string
 }
 
 export type HomeData = {

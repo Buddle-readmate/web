@@ -1,3 +1,8 @@
+import almond from '@/assets/mocks/covers/almond.jpg'
+import contradiction from '@/assets/mocks/covers/contradiction.jpg'
+import dallergut from '@/assets/mocks/covers/dallergut.jpg'
+import demian from '@/assets/mocks/covers/demian.jpg'
+import humanActs from '@/assets/mocks/covers/human-acts.jpg'
 import type { HomeData } from '@/types/home'
 
 // TODO: 홈 API 나오면 교체 (피그마 "홈_교환독서 2개 이상" 기준 더미 데이터)
@@ -63,13 +68,13 @@ export const HOME_MOCK: HomeData = {
     },
   ],
   recentBooks: [
-    { id: 1, title: '데미안' },
-    { id: 2, title: '소년이 온다' },
-    { id: 3, title: '달러구트 꿈백화점' },
-    { id: 4, title: '아몬드' },
-    { id: 5, title: '프로젝트 헤일메리', spineColor: '#b6a974' },
-    { id: 6, title: '모순', spineColor: '#d3cd8d' },
-    { id: 7, title: '어린왕자', spineColor: '#bad65c' },
+    { id: 1, title: '데미안', coverUrl: demian },
+    { id: 2, title: '소년이 온다', coverUrl: humanActs },
+    { id: 3, title: '달러구트 꿈백화점', coverUrl: dallergut },
+    { id: 4, title: '아몬드', coverUrl: almond },
+    { id: 5, title: '프로젝트 헤일메리' },
+    { id: 6, title: '모순', coverUrl: contradiction },
+    { id: 7, title: '어린왕자' },
   ],
 }
 

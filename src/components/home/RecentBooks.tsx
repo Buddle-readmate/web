@@ -1,17 +1,61 @@
 import { useNavigate } from 'react-router-dom'
 import SectionHeader from '@/components/home/SectionHeader'
+import { useMouseHorizontalScroll } from '@/hooks/useMouseHorizontalScroll'
 import type { RecentBook } from '@/types/home'
 
+// 웹 책장에 표지로 보여줄 최근 책 수 (피그마 W/Shelf/Row: 표지 4권 + 책등 칸 = 720px)
 const SHELF_COVER_COUNT = 4
 
-// 웹 책장 마지막 칸의 책등 크기·위치 (피그마 W/Shelf/Row 기준, 최대 3권)
+// 웹 책장 마지막 칸의 책등 (피그마 W/Shelf/Row 일러스트 기준)
 // tilt: 오른쪽 아래 모서리를 기준으로 기울기 (음수 = 윗부분이 왼쪽 책에 기댐)
 // bottom: 기울이면 왼쪽 아래 모서리가 내려가서 그만큼(24 × sin 8° ≈ 3.3px) 올려줌
+// decoration: 빨강 = 책갈피 리본, 노랑 = 아래쪽 띠, 초록 = 왼쪽 옆면
+// 읽은 책 표지들 맨 끝에 붙는 장식이라 제목은 실제 책과 상관없이 고정
 const SPINES = [
-  { width: 44, height: 172, left: 0, bottom: 0, tilt: 0 },
-  { width: 32, height: 148, left: 51, bottom: 0, tilt: 0 },
-  { width: 24, height: 132, left: 101, bottom: 3.3, tilt: -8 },
-]
+  {
+    width: 44,
+    height: 172,
+    left: 0,
+    bottom: 0,
+    tilt: 0,
+    className: 'bg-book-red text-text-contrast',
+    decoration: 'ribbon',
+    title: 'Buddle',
+  },
+  {
+    width: 32,
+    height: 148,
+    left: 44,
+    bottom: 0,
+    tilt: 0,
+    className: 'bg-book-yellow text-text-secondary',
+    decoration: 'band',
+    title: 'Read Mate',
+  },
+  {
+    width: 24,
+    height: 132,
+    left: 93.1,
+    bottom: 3.3,
+    tilt: -8,
+    className: 'bg-green-400 text-text-contrast',
+    decoration: 'edge',
+    title: 'Book',
+  },
+] as const
+
+function SpineDecoration({ type }: { type: (typeof SPINES)[number]['decoration'] }) {
+  if (type === 'ribbon') {
+    // 아래가 V자로 파인 리본 (24 × 98, 가운데가 11.6px 파임)
+    return (
+      <span className="absolute top-0 left-2.5 h-[98px] w-6 bg-book-red-dark [clip-path:polygon(0_0,100%_0,100%_100%,50%_88.2%,0_100%)]" />
+    )
+  }
+  if (type === 'band') {
+    return <span className="absolute right-0 bottom-[23px] left-0 h-2 bg-book-yellow-dark" />
+  }
+  return <span className="absolute top-0 bottom-0 left-0 w-[6.5px] bg-book-green-dark" />
+}
 
 type RecentBooksProps = {
   books: RecentBook[]
@@ -20,7 +64,7 @@ type RecentBooksProps = {
 
 function BookCover({ book, className = '' }: { book?: RecentBook; className?: string }) {
   return book?.coverUrl ? (
-    <img src={book.coverUrl} alt="" className={`object-cover ${className}`} />
+    <img src={book.coverUrl} alt="" loading="lazy" className={`object-cover ${className}`} />
   ) : (
     <span className={`block bg-border-strong ${className}`} />
   )
@@ -29,8 +73,9 @@ function BookCover({ book, className = '' }: { book?: RecentBook; className?: st
 /** 최근 읽은 책 (모바일: 표지 가로 목록 / 웹: 책장 모양) */
 function RecentBooks({ books, className = '' }: RecentBooksProps) {
   const navigate = useNavigate()
-  const coverBooks = books.slice(0, SHELF_COVER_COUNT)
-  const spineBooks = books.slice(SHELF_COVER_COUNT, SHELF_COVER_COUNT + SPINES.length)
+  const listRef = useMouseHorizontalScroll<HTMLUListElement>()
+  const shelfRef = useMouseHorizontalScroll<HTMLDivElement>()
+  const shelfBooks = books.slice(0, SHELF_COVER_COUNT)
 
   return (
     <section className={`flex min-w-0 flex-col gap-3 lg:gap-4 ${className}`}>
@@ -48,7 +93,10 @@ function RecentBooks({ books, className = '' }: RecentBooksProps) {
           <p className="text-m-body-m text-text-weak">책을 검색하고 나의 독서를 기록해보세요</p>
         </div>
       ) : (
-        <ul className="-mx-6 flex gap-3 overflow-x-auto px-6 [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden">
+        <ul
+          ref={listRef}
+          className="-mx-6 flex gap-3 overflow-x-auto px-6 [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden"
+        >
           {books.map((book) => (
             <li key={book.id} className="flex w-[106px] shrink-0 flex-col gap-1">
               <BookCover
@@ -62,7 +110,10 @@ function RecentBooks({ books, className = '' }: RecentBooksProps) {
       )}
 
       {/* 웹: 책장 (칸이 책장보다 좁아지면 선반·제목까지 함께 가로 스크롤) */}
-      <div className="hidden overflow-x-auto [scrollbar-width:none] lg:block [&::-webkit-scrollbar]:hidden">
+      <div
+        ref={shelfRef}
+        className="hidden overflow-x-auto [scrollbar-width:none] lg:block [&::-webkit-scrollbar]:hidden"
+      >
         <div className="flex w-max min-w-full flex-col gap-2">
           <div className="flex flex-col">
             <div className="flex items-end gap-5">
@@ -78,37 +129,33 @@ function RecentBooks({ books, className = '' }: RecentBooksProps) {
                 </>
               ) : (
                 <>
-                  {coverBooks.map((book) => (
+                  {shelfBooks.map((book) => (
                     <BookCover
                       key={book.id}
                       book={book}
                       className="h-48 w-32 shrink-0 rounded-t-xl border-x-[1.5px] border-t-[1.5px] border-border-strong shadow-weak"
                     />
                   ))}
-                  {spineBooks.length > 0 && (
-                    <div className="relative h-48 w-32 shrink-0 overflow-hidden">
-                      {spineBooks.map((book, index) => {
-                        const spine = SPINES[index]
-                        return (
-                          <span
-                            key={book.id}
-                            className="absolute origin-bottom-right overflow-hidden rounded-t-lg pt-4 text-w-body-m font-medium text-text-contrast [text-orientation:sideways] [writing-mode:vertical-rl]"
-                            style={{
-                              left: spine.left,
-                              bottom: spine.bottom,
-                              width: spine.width,
-                              height: spine.height,
-                              backgroundColor: book.spineColor ?? '#b6a974',
-                              transform: spine.tilt ? `rotate(${spine.tilt}deg)` : undefined,
-                              lineHeight: `${spine.width}px`,
-                            }}
-                          >
-                            <span className="block truncate">{book.title}</span>
-                          </span>
-                        )
-                      })}
-                    </div>
-                  )}
+                  {/* 책등 장식 (표지 목록 맨 끝) */}
+                  <div aria-hidden className="relative h-48 w-32 shrink-0 overflow-hidden">
+                    {SPINES.map((spine) => (
+                      <span
+                        key={spine.title}
+                        className={`absolute origin-bottom-right overflow-hidden rounded-t-lg pt-4 text-w-body-m font-medium [text-orientation:sideways] [writing-mode:vertical-rl] ${spine.className}`}
+                        style={{
+                          left: spine.left,
+                          bottom: spine.bottom,
+                          width: spine.width,
+                          height: spine.height,
+                          transform: spine.tilt ? `rotate(${spine.tilt}deg)` : undefined,
+                          lineHeight: `${spine.width}px`,
+                        }}
+                      >
+                        <SpineDecoration type={spine.decoration} />
+                        <span className="relative block truncate">{spine.title}</span>
+                      </span>
+                    ))}
+                  </div>
                 </>
               )}
             </div>
@@ -116,9 +163,9 @@ function RecentBooks({ books, className = '' }: RecentBooksProps) {
             <span className="h-3 w-full rounded-b-sm bg-brown-700" />
           </div>
 
-          {coverBooks.length > 0 && (
+          {shelfBooks.length > 0 && (
             <ul className="flex gap-5">
-              {coverBooks.map((book) => (
+              {shelfBooks.map((book) => (
                 <li
                   key={book.id}
                   className="w-32 shrink-0 truncate text-w-body-m font-medium text-text-default"

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import HomeHeader from '@/components/home/HomeHeader'
 import DayRecordPanel from '@/components/record/DayRecordPanel'
@@ -27,6 +27,8 @@ function CalendarPage() {
   const [selectedKey, setSelectedKey] = useState(todayKey)
   // 기록 추가는 ?sheet=add-record 로 캘린더 위에 띄움 (뒤로가기로 닫힘)
   const sheet = useOverlayParam('sheet')
+  const [isFutureToastVisible, setIsFutureToastVisible] = useState(false)
+  const toastTimerRef = useRef<number | undefined>(undefined)
 
   const { year, month } = viewMonth
   const monthPrefix = toDateKey(year, month, 1).slice(0, 8)
@@ -48,6 +50,15 @@ function CalendarPage() {
     setViewMonth({ year: today.year, month: today.month })
     setSelectedKey(todayKey)
   }
+
+  // 미래 날짜에 기록을 추가하려 하면 위에 잠깐 안내
+  const showFutureToast = () => {
+    setIsFutureToastVisible(true)
+    window.clearTimeout(toastTimerRef.current)
+    toastTimerRef.current = window.setTimeout(() => setIsFutureToastVisible(false), 2000)
+  }
+
+  useEffect(() => () => window.clearTimeout(toastTimerRef.current), [])
 
   const handleSave = (record: NewReadingRecord) => {
     // TODO: 기록 저장 API 연동
@@ -93,14 +104,23 @@ function CalendarPage() {
               records={selectedRecords}
               isToday={selectedKey === todayKey}
               onAdd={() => {
-                // TODO: 미래 날짜의 버튼 상태·안내 문구는 시안 나오면 추가 (지금은 열리지만 않게 막음)
-                if (selectedKey <= todayKey) sheet.open('add-record')
+                if (selectedKey > todayKey) showFutureToast()
+                else sheet.open('add-record')
               }}
               className="lg:w-[320px] lg:shrink-0"
             />
           </div>
         </main>
       </div>
+
+      {isFutureToastVisible && (
+        <p
+          role="status"
+          className="fixed top-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-gray-900 px-4 py-2 text-m-caption whitespace-nowrap text-text-contrast shadow-tab lg:text-w-caption"
+        >
+          미래 날짜는 기록할 수 없어요
+        </p>
+      )}
 
       {sheet.value === 'add-record' && (
         <RecordAddSheet

@@ -28,6 +28,8 @@ export type YearStats = {
   }
   /** 오래된 달 → 마지막 달 순서, 6개월 */
   monthly: MonthlyReading[]
+  /** 6개월 차트 밖에 추가된 기록의 달 (가장 많이 읽은 달 계산용) */
+  extraMonths?: MonthlyReading[]
   /** 'YYYY-MM-DD' → 잔디 단계. 없는 날짜는 0 */
   grass: Record<string, StreakLevel>
   /** 이번 달 목표 페이스 (하루 n쪽) */

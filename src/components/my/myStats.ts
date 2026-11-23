@@ -1,8 +1,13 @@
 import type { ExchangeBook, ReadingRecord } from '@/types/calendar'
 import type { StreakLevel } from '@/types/home'
-import type { MyPageData, YearStats } from '@/types/my'
+import type { MonthlyReading, MyPageData, YearStats } from '@/types/my'
 import { getRecordPages } from '@/utils/calendar'
 import { getGrassWeeks, getLongestStreak } from '@/utils/grass'
+
+/** 웹 잔디(26주)의 첫 날짜 */
+function getGrassStart(endDate: string) {
+  return getGrassWeeks({}, 26, endDate)[0].cells[0].date
+}
 
 /**
  * 캘린더에서 추가한 기록을 마이페이지 통계에 더하기
@@ -18,37 +23,56 @@ export function applyAddedRecords(
 
   for (const record of [...records].sort((a, b) => a.date.localeCompare(b.date))) {
     const [year, month] = record.date.split('-').map(Number)
-    const current = byYear[year]
-    if (!current) continue
+    if (!byYear[year]) continue
 
     const pages = getRecordPages(record)
-    const level = current.grass[record.date] ?? 0
-    const isNewDay = level === 0
     const finishedKey = `${year}-${record.book.id}`
     const totalPages = books.find((book) => book.id === record.book.id)?.totalPages
     const isFinished =
       totalPages !== undefined && record.endPage >= totalPages && !finishedKeys.has(finishedKey)
     if (isFinished) finishedKeys.add(finishedKey)
 
-    byYear[year] = {
-      ...current,
-      stats: {
-        finished: current.stats.finished + (isFinished ? 1 : 0),
-        pages: current.stats.pages + pages,
-        days: current.stats.days + (isNewDay ? 1 : 0),
-        thoughts: current.stats.thoughts + (record.memo ? 1 : 0),
-      },
-      monthly: current.monthly.map((item) =>
-        item.year === year && item.month === month
+    // 올해 차트·잔디는 작년까지 걸칠 수 있어서, 날짜가 보이는 모든 연도에 반영 (누적 통계는 해당 연도만)
+    for (const target of Object.values(byYear)) {
+      const isOwnYear = target.year === year
+      const isInMonthly = target.monthly.some((item) => item.year === year && item.month === month)
+      const isInGrass =
+        record.date <= target.endDate && record.date >= getGrassStart(target.endDate)
+      if (!isOwnYear && !isInMonthly && !isInGrass) continue
+
+      const level = target.grass[record.date] ?? 0
+      const isNewDay = level === 0
+      const addMonth = (item: MonthlyReading): MonthlyReading => ({
+        ...item,
+        pages: item.pages + pages,
+        recordDays: item.recordDays + (isNewDay ? 1 : 0),
+        finishedBooks: item.finishedBooks + (isFinished ? 1 : 0),
+      })
+      const isRecordMonth = (item: MonthlyReading) => item.year === year && item.month === month
+      const extraMonths = target.extraMonths ?? []
+
+      byYear[target.year] = {
+        ...target,
+        stats: isOwnYear
           ? {
-              ...item,
-              pages: item.pages + pages,
-              recordDays: item.recordDays + (isNewDay ? 1 : 0),
-              finishedBooks: item.finishedBooks + (isFinished ? 1 : 0),
+              finished: target.stats.finished + (isFinished ? 1 : 0),
+              pages: target.stats.pages + pages,
+              days: target.stats.days + (isNewDay ? 1 : 0),
+              thoughts: target.stats.thoughts + (record.memo ? 1 : 0),
             }
-          : item,
-      ),
-      grass: { ...current.grass, [record.date]: Math.min(4, level + 1) as StreakLevel },
+          : target.stats,
+        monthly: target.monthly.map((item) => (isRecordMonth(item) ? addMonth(item) : item)),
+        extraMonths:
+          !isOwnYear || isInMonthly
+            ? target.extraMonths
+            : extraMonths.some(isRecordMonth)
+              ? extraMonths.map((item) => (isRecordMonth(item) ? addMonth(item) : item))
+              : [
+                  ...extraMonths,
+                  addMonth({ year, month, pages: 0, recordDays: 0, finishedBooks: 0 }),
+                ],
+        grass: { ...target.grass, [record.date]: Math.min(4, level + 1) as StreakLevel },
+      }
     }
   }
 
@@ -67,8 +91,11 @@ export function getMyStats(data: YearStats) {
   const mobileMonths = data.monthly.slice(-4)
   const webMonths = data.monthly.slice(-6)
   const current = data.monthly[data.monthly.length - 1]
-  const best = data.monthly.reduce((max, item) => (item.pages > max.pages ? item : max))
-  const hasRecords = data.monthly.some((item) => item.pages > 0)
+  const best = [...data.monthly, ...(data.extraMonths ?? [])].reduce((max, item) =>
+    item.pages > max.pages ? item : max,
+  )
+  // 최근 6개월 밖의 기록만 있어도 그 해는 기록이 있는 상태
+  const hasRecords = data.stats.pages > 0 || data.monthly.some((item) => item.pages > 0)
 
   const countDays = (weekCount: number) =>
     getGrassWeeks(data.grass, weekCount, data.endDate)

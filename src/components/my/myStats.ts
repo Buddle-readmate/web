@@ -1,5 +1,66 @@
-import type { YearStats } from '@/types/my'
+import type { ExchangeBook, ReadingRecord } from '@/types/calendar'
+import type { StreakLevel } from '@/types/home'
+import type { MyPageData, YearStats } from '@/types/my'
+import { getRecordPages } from '@/utils/calendar'
 import { getGrassWeeks, getLongestStreak } from '@/utils/grass'
+
+/**
+ * 캘린더에서 추가한 기록을 마이페이지 통계에 더하기
+ * TODO: 통계 API 연동되면 제거 (서버가 계산한 값을 그대로 사용)
+ */
+export function applyAddedRecords(
+  data: MyPageData,
+  records: ReadingRecord[],
+  books: ExchangeBook[],
+): MyPageData {
+  const byYear = { ...data.byYear }
+  const finishedKeys = new Set<string>()
+
+  for (const record of [...records].sort((a, b) => a.date.localeCompare(b.date))) {
+    const [year, month] = record.date.split('-').map(Number)
+    const current = byYear[year]
+    if (!current) continue
+
+    const pages = getRecordPages(record)
+    const level = current.grass[record.date] ?? 0
+    const isNewDay = level === 0
+    const finishedKey = `${year}-${record.book.id}`
+    const totalPages = books.find((book) => book.id === record.book.id)?.totalPages
+    const isFinished =
+      totalPages !== undefined && record.endPage >= totalPages && !finishedKeys.has(finishedKey)
+    if (isFinished) finishedKeys.add(finishedKey)
+
+    byYear[year] = {
+      ...current,
+      stats: {
+        finished: current.stats.finished + (isFinished ? 1 : 0),
+        pages: current.stats.pages + pages,
+        days: current.stats.days + (isNewDay ? 1 : 0),
+        thoughts: current.stats.thoughts + (record.memo ? 1 : 0),
+      },
+      monthly: current.monthly.map((item) =>
+        item.year === year && item.month === month
+          ? {
+              ...item,
+              pages: item.pages + pages,
+              recordDays: item.recordDays + (isNewDay ? 1 : 0),
+              finishedBooks: item.finishedBooks + (isFinished ? 1 : 0),
+            }
+          : item,
+      ),
+      grass: { ...current.grass, [record.date]: Math.min(4, level + 1) as StreakLevel },
+    }
+  }
+
+  return {
+    ...data,
+    byYear,
+    years: data.years.map((item) => ({
+      ...item,
+      hasRecords: item.hasRecords || records.some((r) => r.date.startsWith(`${item.year}-`)),
+    })),
+  }
+}
 
 /** 마이페이지 문구에 쓰는 값 계산 (모바일 16주·4개월 / 웹 26주·6개월 기준) */
 export function getMyStats(data: YearStats) {

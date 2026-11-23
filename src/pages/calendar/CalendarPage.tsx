@@ -7,8 +7,9 @@ import ReadingCalendar from '@/components/record/ReadingCalendar'
 import RecordAddSheet from '@/components/record/RecordAddSheet'
 import { useOverlayParam } from '@/hooks/useOverlayParam'
 import { CALENDAR_RECORDS_MOCK, EXCHANGE_BOOKS_MOCK } from '@/mocks/calendar'
-import type { NewReadingRecord, ReadingRecord } from '@/types/calendar'
-import { getTodayKey, parseDateKey, toDateKey } from '@/utils/calendar'
+import { useReadingRecordStore } from '@/stores/readingRecordStore'
+import type { NewReadingRecord } from '@/types/calendar'
+import { getRecordPages, getTodayKey, parseDateKey, toDateKey } from '@/utils/calendar'
 
 function CalendarPage() {
   const navigate = useNavigate()
@@ -17,9 +18,11 @@ function CalendarPage() {
   const today = parseDateKey(todayKey)
 
   // TODO: 독서 기록 API 연동 전까지 더미 데이터 (개발 중 /calendar?mock=empty 로 빈 상태 확인)
-  const [records, setRecords] = useState<ReadingRecord[]>(() =>
-    import.meta.env.DEV && searchParams.get('mock') === 'empty' ? [] : CALENDAR_RECORDS_MOCK,
-  )
+  const baseRecords =
+    import.meta.env.DEV && searchParams.get('mock') === 'empty' ? [] : CALENDAR_RECORDS_MOCK
+  const addedRecords = useReadingRecordStore((state) => state.addedRecords)
+  const addRecord = useReadingRecordStore((state) => state.addRecord)
+  const records = [...baseRecords, ...addedRecords]
   const [viewMonth, setViewMonth] = useState({ year: today.year, month: today.month })
   const [selectedKey, setSelectedKey] = useState(todayKey)
   // 기록 추가는 ?sheet=add-record 로 캘린더 위에 띄움 (뒤로가기로 닫힘)
@@ -29,7 +32,7 @@ function CalendarPage() {
   const monthPrefix = toDateKey(year, month, 1).slice(0, 8)
   const monthRecords = records.filter((record) => record.date.startsWith(monthPrefix))
   const monthDays = new Set(monthRecords.map((record) => record.date)).size
-  const monthPages = monthRecords.reduce((sum, r) => sum + r.endPage - r.startPage, 0)
+  const monthPages = monthRecords.reduce((sum, r) => sum + getRecordPages(r), 0)
   const selectedRecords = records.filter((record) => record.date === selectedKey)
 
   // 달을 옮기면 이번 달은 오늘, 다른 달은 1일을 선택
@@ -48,7 +51,7 @@ function CalendarPage() {
 
   const handleSave = (record: NewReadingRecord) => {
     // TODO: 기록 저장 API 연동
-    setRecords((prev) => [...prev, { ...record, id: Date.now() }])
+    addRecord(record)
     sheet.close()
   }
 

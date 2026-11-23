@@ -79,7 +79,7 @@ function RecordAddSheet({ dateKey, books, onSave, onClose }: RecordAddSheetProps
     startPage !== '' &&
     endPage !== '' &&
     start >= 1 &&
-    end > start &&
+    end >= start &&
     (!book || end <= book.totalPages)
 
   const handleSave = () => {

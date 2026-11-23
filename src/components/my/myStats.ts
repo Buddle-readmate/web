@@ -1,7 +1,7 @@
 import type { ExchangeBook, ReadingRecord } from '@/types/calendar'
 import type { StreakLevel } from '@/types/home'
 import type { MonthlyReading, MyPageData, YearStats } from '@/types/my'
-import { getRecordPages } from '@/utils/calendar'
+import { getRecordPages, getTodayKey } from '@/utils/calendar'
 import { getGrassWeeks, getLongestStreak } from '@/utils/grass'
 
 /** 웹 잔디(26주)의 첫 날짜 */
@@ -20,8 +20,11 @@ export function applyAddedRecords(
 ): MyPageData {
   const byYear = { ...data.byYear }
   const finishedKeys = new Set<string>()
+  // 오늘 이후 날짜는 아직 읽은 기록이 아니므로 통계에서 제외
+  const todayKey = getTodayKey()
+  const pastRecords = records.filter((record) => record.date <= todayKey)
 
-  for (const record of [...records].sort((a, b) => a.date.localeCompare(b.date))) {
+  for (const record of [...pastRecords].sort((a, b) => a.date.localeCompare(b.date))) {
     const [year, month] = record.date.split('-').map(Number)
     if (!byYear[year]) continue
 
@@ -81,7 +84,7 @@ export function applyAddedRecords(
     byYear,
     years: data.years.map((item) => ({
       ...item,
-      hasRecords: item.hasRecords || records.some((r) => r.date.startsWith(`${item.year}-`)),
+      hasRecords: item.hasRecords || pastRecords.some((r) => r.date.startsWith(`${item.year}-`)),
     })),
   }
 }

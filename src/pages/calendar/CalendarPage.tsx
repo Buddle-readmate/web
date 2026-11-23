@@ -92,7 +92,10 @@ function CalendarPage() {
               dateKey={selectedKey}
               records={selectedRecords}
               isToday={selectedKey === todayKey}
-              onAdd={() => sheet.open('add-record')}
+              onAdd={() => {
+                // TODO: 미래 날짜의 버튼 상태·안내 문구는 시안 나오면 추가 (지금은 열리지만 않게 막음)
+                if (selectedKey <= todayKey) sheet.open('add-record')
+              }}
               className="lg:w-[320px] lg:shrink-0"
             />
           </div>

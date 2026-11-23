@@ -94,11 +94,14 @@ export function getMyStats(data: YearStats) {
   const mobileMonths = data.monthly.slice(-4)
   const webMonths = data.monthly.slice(-6)
   const current = data.monthly[data.monthly.length - 1]
-  const best = [...data.monthly, ...(data.extraMonths ?? [])].reduce((max, item) =>
-    item.pages > max.pages ? item : max,
+  // 차트·잔디는 작년까지 걸칠 수 있어서, 문구에 쓰는 값은 선택한 연도만으로 계산
+  const best = [...data.monthly, ...(data.extraMonths ?? [])]
+    .filter((item) => item.year === data.year)
+    .reduce((max, item) => (item.pages > max.pages ? item : max))
+  const yearGrass = Object.fromEntries(
+    Object.entries(data.grass).filter(([date]) => date.startsWith(`${data.year}-`)),
   )
-  // 최근 6개월 밖의 기록만 있어도 그 해는 기록이 있는 상태
-  const hasRecords = data.stats.pages > 0 || data.monthly.some((item) => item.pages > 0)
+  const hasRecords = data.stats.pages > 0
 
   const countDays = (weekCount: number) =>
     getGrassWeeks(data.grass, weekCount, data.endDate)
@@ -114,7 +117,7 @@ export function getMyStats(data: YearStats) {
     webMonths,
     current,
     best,
-    longestStreak: getLongestStreak(data.grass),
+    longestStreak: getLongestStreak(yearGrass),
     /** '2026년 8월 – 11월' */
     mobileRange: `${mobileMonths[0].year}년 ${mobileMonths[0].month}월 – ${current.month}월`,
     mobileGrassDays: countDays(16),

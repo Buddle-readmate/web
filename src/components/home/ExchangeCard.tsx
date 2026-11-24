@@ -55,7 +55,7 @@ function ExchangeCard({ room, className = '' }: ExchangeCardProps) {
         </div>
 
         <div className="flex items-center gap-1 lg:gap-2">
-          <span className="w-7 shrink-0 text-m-caption font-medium text-text-green lg:w-[38px] lg:text-w-label-m lg:font-semibold">
+          <span className="min-w-7 shrink-0 text-m-caption font-medium text-text-green lg:min-w-[38px] lg:text-w-label-m lg:font-semibold">
             {room.progress}%
           </span>
           <div

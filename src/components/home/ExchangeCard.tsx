@@ -19,32 +19,43 @@ function ExchangeCard({ room, className = '' }: ExchangeCardProps) {
       )}
 
       <div className="flex h-full min-w-0 flex-1 flex-col justify-between p-4 lg:p-6">
-        <div className="flex flex-col gap-1 lg:gap-2">
-          <div className="flex flex-col">
-            <h3 className="truncate text-m-body-l font-medium text-text-default lg:text-w-body-l">
-              {room.name}
-            </h3>
-            <p className="flex items-center gap-1 text-m-caption text-text-weak lg:text-w-caption">
-              <span className="truncate">{room.bookTitle}</span>
-              <span aria-hidden className="h-3 w-px shrink-0 bg-text-weak" />
-              <span className="truncate">{room.author}</span>
-            </p>
+        <div className="flex items-start gap-2">
+          <div className="flex min-w-0 flex-1 flex-col gap-1 lg:gap-2">
+            <div className="flex flex-col">
+              <h3 className="truncate text-m-body-l font-medium text-text-default lg:text-w-label-l lg:font-semibold">
+                {room.name}
+              </h3>
+              <p className="flex items-center gap-1 text-m-caption font-medium text-text-weak lg:text-w-body-m lg:font-medium">
+                <span className="truncate">{room.bookTitle}</span>
+                <span aria-hidden className="h-3 w-px shrink-0 bg-text-weak" />
+                <span className="truncate">{room.author}</span>
+                <span aria-hidden className="h-3 w-px shrink-0 bg-text-weak" />
+                <span className="shrink-0">{room.totalPages}쪽</span>
+              </p>
+            </div>
+            <ul aria-label={`멤버 ${room.memberAvatarUrls.length}명`} className="flex">
+              {room.memberAvatarUrls.map((url, index) => (
+                <li
+                  key={index}
+                  className="-mr-1 size-5 last:mr-0 lg:-mr-1.5 lg:size-7 lg:last:mr-0"
+                >
+                  {url ? (
+                    <img src={url} alt="" className="size-full rounded-full" />
+                  ) : (
+                    <span className="block size-full rounded-full bg-gray-200" />
+                  )}
+                </li>
+              ))}
+            </ul>
           </div>
-          <ul aria-label={`멤버 ${room.memberAvatarUrls.length}명`} className="flex">
-            {room.memberAvatarUrls.map((url, index) => (
-              <li key={index} className="-mr-1 size-5 last:mr-0 lg:-mr-[4.8px] lg:size-6">
-                {url ? (
-                  <img src={url} alt="" className="size-full rounded-full" />
-                ) : (
-                  <span className="block size-full rounded-full bg-gray-200" />
-                )}
-              </li>
-            ))}
-          </ul>
+          {/* 모바일: 방 이름 줄 가운데 정렬 (22px 줄에서 12px 글자) / 웹: 위쪽 정렬 */}
+          <span className="mt-[3px] shrink-0 text-m-caption font-medium text-text-weak lg:mt-0 lg:text-w-body-m lg:font-medium">
+            {room.lastActivityAgo}
+          </span>
         </div>
 
         <div className="flex items-center gap-1 lg:gap-2">
-          <span className="text-m-label-s text-text-secondary lg:text-w-label-s">
+          <span className="w-7 shrink-0 text-m-caption font-medium text-text-green lg:w-[38px] lg:text-w-label-m lg:font-semibold">
             {room.progress}%
           </span>
           <div
@@ -53,7 +64,7 @@ function ExchangeCard({ room, className = '' }: ExchangeCardProps) {
             aria-valuemin={0}
             aria-valuemax={100}
             aria-label="진행률"
-            className="flex h-[18px] flex-1 rounded-full bg-surface-gray-light p-0.5 lg:h-5"
+            className="flex h-3.5 flex-1 rounded-full bg-surface-gray-light p-0.5 lg:h-4"
           >
             <span className="rounded-full bg-border-green" style={{ width: `${room.progress}%` }} />
           </div>

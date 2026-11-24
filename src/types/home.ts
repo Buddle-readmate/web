@@ -25,6 +25,10 @@ export type ExchangeRoom = {
   name: string
   bookTitle: string
   author: string
+  /** 책 전체 쪽수 */
+  totalPages: number
+  /** 마지막 활동 시각 (예: "1시간 전") */
+  lastActivityAgo: string
   coverUrl?: string
   memberAvatarUrls: (string | undefined)[]
   /** 0~100 */

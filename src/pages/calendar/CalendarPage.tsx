@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import HomeHeader from '@/components/home/HomeHeader'
 import DayRecordPanel from '@/components/record/DayRecordPanel'
@@ -7,8 +7,9 @@ import ReadingCalendar from '@/components/record/ReadingCalendar'
 import RecordAddSheet from '@/components/record/RecordAddSheet'
 import { useOverlayParam } from '@/hooks/useOverlayParam'
 import { CALENDAR_RECORDS_MOCK, EXCHANGE_BOOKS_MOCK } from '@/mocks/calendar'
-import type { NewReadingRecord, ReadingRecord } from '@/types/calendar'
-import { getTodayKey, parseDateKey, toDateKey } from '@/utils/calendar'
+import { useReadingRecordStore } from '@/stores/readingRecordStore'
+import type { NewReadingRecord } from '@/types/calendar'
+import { getRecordPages, getTodayKey, parseDateKey, toDateKey } from '@/utils/calendar'
 
 function CalendarPage() {
   const navigate = useNavigate()
@@ -17,19 +18,23 @@ function CalendarPage() {
   const today = parseDateKey(todayKey)
 
   // TODO: 독서 기록 API 연동 전까지 더미 데이터 (개발 중 /calendar?mock=empty 로 빈 상태 확인)
-  const [records, setRecords] = useState<ReadingRecord[]>(() =>
-    import.meta.env.DEV && searchParams.get('mock') === 'empty' ? [] : CALENDAR_RECORDS_MOCK,
-  )
+  const baseRecords =
+    import.meta.env.DEV && searchParams.get('mock') === 'empty' ? [] : CALENDAR_RECORDS_MOCK
+  const addedRecords = useReadingRecordStore((state) => state.addedRecords)
+  const addRecord = useReadingRecordStore((state) => state.addRecord)
+  const records = [...baseRecords, ...addedRecords]
   const [viewMonth, setViewMonth] = useState({ year: today.year, month: today.month })
   const [selectedKey, setSelectedKey] = useState(todayKey)
   // 기록 추가는 ?sheet=add-record 로 캘린더 위에 띄움 (뒤로가기로 닫힘)
   const sheet = useOverlayParam('sheet')
+  const [isFutureToastVisible, setIsFutureToastVisible] = useState(false)
+  const toastTimerRef = useRef<number | undefined>(undefined)
 
   const { year, month } = viewMonth
   const monthPrefix = toDateKey(year, month, 1).slice(0, 8)
   const monthRecords = records.filter((record) => record.date.startsWith(monthPrefix))
   const monthDays = new Set(monthRecords.map((record) => record.date)).size
-  const monthPages = monthRecords.reduce((sum, r) => sum + r.endPage - r.startPage, 0)
+  const monthPages = monthRecords.reduce((sum, r) => sum + getRecordPages(r), 0)
   const selectedRecords = records.filter((record) => record.date === selectedKey)
 
   // 달을 옮기면 이번 달은 오늘, 다른 달은 1일을 선택
@@ -46,9 +51,18 @@ function CalendarPage() {
     setSelectedKey(todayKey)
   }
 
+  // 미래 날짜에 기록을 추가하려 하면 위에 잠깐 안내
+  const showFutureToast = () => {
+    setIsFutureToastVisible(true)
+    window.clearTimeout(toastTimerRef.current)
+    toastTimerRef.current = window.setTimeout(() => setIsFutureToastVisible(false), 2000)
+  }
+
+  useEffect(() => () => window.clearTimeout(toastTimerRef.current), [])
+
   const handleSave = (record: NewReadingRecord) => {
     // TODO: 기록 저장 API 연동
-    setRecords((prev) => [...prev, { ...record, id: Date.now() }])
+    addRecord(record)
     sheet.close()
   }
 
@@ -89,12 +103,24 @@ function CalendarPage() {
               dateKey={selectedKey}
               records={selectedRecords}
               isToday={selectedKey === todayKey}
-              onAdd={() => sheet.open('add-record')}
+              onAdd={() => {
+                if (selectedKey > todayKey) showFutureToast()
+                else sheet.open('add-record')
+              }}
               className="lg:w-[320px] lg:shrink-0"
             />
           </div>
         </main>
       </div>
+
+      {isFutureToastVisible && (
+        <p
+          role="status"
+          className="fixed top-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-gray-900 px-4 py-2 text-m-caption whitespace-nowrap text-text-contrast shadow-tab lg:text-w-caption"
+        >
+          미래 날짜는 기록할 수 없어요
+        </p>
+      )}
 
       {sheet.value === 'add-record' && (
         <RecordAddSheet

@@ -1,6 +1,6 @@
 import icBookOpen from '@/assets/icons/ic-book-open.svg'
 import type { ReadingRecord } from '@/types/calendar'
-import { formatDateLabel } from '@/utils/calendar'
+import { formatDateLabel, getRecordPages } from '@/utils/calendar'
 
 type DayRecordPanelProps = {
   dateKey: string
@@ -43,7 +43,7 @@ function RecordItem({ record }: { record: ReadingRecord }) {
 
 /** 선택한 날짜의 독서 기록 (모바일: 달력 아래 / 웹: 달력 오른쪽 320px) */
 function DayRecordPanel({ dateKey, records, isToday, onAdd, className = '' }: DayRecordPanelProps) {
-  const totalPages = records.reduce((sum, record) => sum + record.endPage - record.startPage, 0)
+  const totalPages = records.reduce((sum, record) => sum + getRecordPages(record), 0)
   const bookCount = new Set(records.map((record) => record.book.id)).size
   const summary =
     records.length > 0

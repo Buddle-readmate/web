@@ -48,3 +48,8 @@ export function formatDateLabel(key: string) {
   const weekday = WEEKDAY_NAMES[new Date(year, month - 1, day).getDay()]
   return `${month}월 ${day}일 ${weekday}요일`
 }
+
+/** 기록 한 건의 읽은 쪽수 (시작 쪽과 끝 쪽 모두 포함: 1~345쪽 = 345쪽) */
+export function getRecordPages(record: { startPage: number; endPage: number }) {
+  return record.endPage - record.startPage + 1
+}

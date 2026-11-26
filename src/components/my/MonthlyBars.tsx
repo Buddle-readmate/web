@@ -1,7 +1,7 @@
 import type { MonthlyReading } from '@/types/my'
 
 // 모바일: 막대 40px, 가장 긴 막대 130px, 가운데 정렬 간격 32px
-// 웹: 막대 32px, 가장 긴 막대 196px, 양끝 정렬
+// 웹: 막대 32px (아이패드 가로처럼 좁은 1280px 미만은 24px), 가장 긴 막대 196px, 양끝 정렬
 const VARIANT = {
   mobile: {
     maxHeight: 130,
@@ -14,7 +14,7 @@ const VARIANT = {
   },
   web: {
     maxHeight: 196,
-    barClass: 'w-8',
+    barClass: 'w-6 xl:w-8',
     wrapClass: 'justify-between',
     labelClass: 'text-w-caption',
     gap: 'gap-2',

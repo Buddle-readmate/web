@@ -33,7 +33,7 @@ function ReadingStreakCard({ nickname, streak, className = '' }: ReadingStreakCa
   return (
     <section
       aria-label="이번 달 독서 잔디"
-      className={`flex items-center justify-between overflow-hidden rounded-3xl bg-surface-brown p-5 lg:items-end lg:gap-9 lg:px-9 lg:py-8 ${className}`}
+      className={`flex items-center justify-between overflow-hidden rounded-3xl bg-surface-brown p-5 lg:items-end lg:gap-6 lg:px-7 lg:py-8 xl:gap-9 xl:px-9 ${className}`}
     >
       {/* 왼쪽: 월 + 통계 */}
       <div className="flex flex-col justify-between self-stretch lg:flex-1">
@@ -76,22 +76,22 @@ function ReadingStreakCard({ nickname, streak, className = '' }: ReadingStreakCa
         </div>
       </div>
 
-      {/* 오른쪽: 요일 + 잔디 */}
+      {/* 오른쪽: 요일 + 잔디 (아이패드 가로처럼 카드가 좁으면 칸 28px, 1280px부터 시안 36px) */}
       <div className="flex shrink-0 flex-col items-center gap-1 lg:gap-2">
         <div className="flex w-full justify-between px-[9px] text-m-caption text-text-weak-brown lg:text-w-caption">
           {WEEKDAYS.map((day) => (
             <span key={day}>{day}</span>
           ))}
         </div>
-        <ol className="grid grid-cols-7 gap-1 lg:gap-2">
+        <ol className="grid grid-cols-7 gap-1 xl:gap-2">
           {cells.map((date, index) =>
             date === null ? (
-              <li key={`empty-${index}`} aria-hidden className="size-6 lg:size-9" />
+              <li key={`empty-${index}`} aria-hidden className="size-6 lg:size-7 xl:size-9" />
             ) : (
               <li
                 key={date}
                 aria-label={`${date}일`}
-                className={`size-6 rounded-lg lg:size-9 ${LEVEL_COLOR[streak.levels[date] ?? 0]}`}
+                className={`size-6 rounded-lg lg:size-7 xl:size-9 ${LEVEL_COLOR[streak.levels[date] ?? 0]}`}
               />
             ),
           )}

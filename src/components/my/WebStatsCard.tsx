@@ -60,7 +60,8 @@ function WebStatsCard({
       </ul>
 
       <div className="flex h-[366px] gap-6">
-        <div className="relative flex w-[300px] shrink-0 flex-col gap-4">
+        {/* 시안 300px, 아이패드 가로처럼 카드가 좁으면 줄여서 잔디 자리 확보 */}
+        <div className="relative flex w-[38%] max-w-[300px] shrink-0 flex-col gap-4">
           <div className="flex flex-col gap-1">
             <h4 className="text-w-label-s text-text-secondary-brown">월별 독서량</h4>
             <p className="text-w-caption text-text-weak-brown">
@@ -101,8 +102,9 @@ function WebStatsCard({
             </p>
           </div>
           <ReadingGrassGrid grass={data.grass} endDate={data.endDate} variant="web" />
-          <div className="flex items-center justify-between gap-3">
-            <p className="truncate text-w-caption text-text-weak-brown">
+          {/* 좁으면 문구와 범례를 두 줄로 (잘리지 않게) */}
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+            <p className="text-w-caption break-keep text-text-weak-brown">
               {hasRecords
                 ? `가장 많이 읽은 달 ${stats.best.month}월 · 최장 연속 ${stats.longestStreak}일`
                 : '첫 기록을 남기면 오늘 칸부터 잔디가 채워져요'}

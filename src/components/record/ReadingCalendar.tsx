@@ -85,14 +85,14 @@ function ReadingCalendar({
         </button>
       </div>
 
-      {/* 1440px 이상: 시안처럼 칸 70×100 (7칸 490px)으로 가운데 정렬 */}
-      <div className="grid grid-cols-7 text-center text-m-caption text-text-weak-brown lg:text-w-caption desktop:mx-auto desktop:w-[490px]">
+      {/* 웹: 시안처럼 달력 카드 폭의 71.6% (1440px에서 7칸 490px, 칸 70×100)로 가운데 정렬 */}
+      <div className="grid grid-cols-7 text-center text-m-caption text-text-weak-brown lg:text-w-caption lg:mx-auto lg:w-[71.6%]">
         {WEEKDAYS.map((weekday) => (
           <span key={weekday}>{weekday}</span>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 desktop:mx-auto desktop:w-[490px]">
+      <div className="grid grid-cols-7 lg:mx-auto lg:w-[71.6%]">
         {cells.map((day, index) => {
           if (day === null) return <span key={`blank-${index}`} className="aspect-[128/183]" />
           const dateKey = toDateKey(year, month, day)

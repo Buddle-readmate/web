@@ -23,8 +23,9 @@ function RecordItem({ record }: { record: ReadingRecord }) {
         <span className="h-12 w-[34px] shrink-0 rounded bg-surface-brown lg:h-[50px] lg:w-9" />
       )}
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <p className="truncate text-m-label-s text-text-default lg:text-w-label-s">
+        {/* 아이패드 가로처럼 패널이 좁아지면 제목이 잘리지 않고 쪽수 배지가 아랫줄로 */}
+        <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
+          <p className="min-w-0 text-m-label-s break-keep [overflow-wrap:anywhere] text-text-default lg:text-w-label-s">
             {record.book.title}
           </p>
           <span className="shrink-0 rounded-full bg-surface-brown px-2 py-0.5 text-m-caption text-text-secondary-brown">

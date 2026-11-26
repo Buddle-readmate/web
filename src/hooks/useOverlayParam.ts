@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 /**
  * 모달·오버레이를 페이지 이동 없이 현재 화면 위에 띄우기 (?{key}=값)
@@ -7,7 +7,6 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
  */
 export function useOverlayParam(key: string) {
   const navigate = useNavigate()
-  const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const value = searchParams.get(key)
@@ -19,8 +18,10 @@ export function useOverlayParam(key: string) {
   }
 
   const close = () => {
-    // ?key= 주소로 바로 들어와 이전 기록이 없으면 그 값만 지우기
-    if (location.key === 'default') {
+    // ?key= 주소로 바로 들어와 앱 안 이전 기록이 없으면 그 값만 지우기
+    // (replace 이동·리다이렉트 뒤에는 location.key가 바뀌어서 router 기록 순번(idx)으로 확인)
+    const historyIndex = (window.history.state as { idx?: number } | null)?.idx ?? 0
+    if (historyIndex === 0) {
       const next = new URLSearchParams(searchParams)
       next.delete(key)
       setSearchParams(next, { replace: true })

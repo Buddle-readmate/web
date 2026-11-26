@@ -1,6 +1,10 @@
+import almond from '@/assets/mocks/covers/almond.jpg'
+import contradiction from '@/assets/mocks/covers/contradiction.jpg'
+import convenienceStore from '@/assets/mocks/covers/convenience-store.jpg'
 import demian from '@/assets/mocks/covers/demian.jpg'
 import humanActs from '@/assets/mocks/covers/human-acts.jpg'
-import type { RoomDetail, RoomSummary } from '@/types/room'
+import type { JoinableRoom, RoomDetail, RoomSummary, ShelfBook } from '@/types/room'
+import { toPageRanges } from '@/utils/room'
 
 // TODO: 교환독서 API 나오면 교체 (피그마 "교환독서_메인" / "교환독서방" 시안 기준 더미 데이터)
 export const ROOMS_MOCK: RoomSummary[] = [
@@ -52,6 +56,9 @@ export const ROOMS_MOCK: RoomSummary[] = [
   })),
 ]
 
+/** 더미 데이터 속 내 id */
+export const MY_ID = 1
+
 const DEMIAN_ROOM: RoomDetail = {
   id: 2,
   name: '수요일 데미안 클럽',
@@ -59,7 +66,7 @@ const DEMIAN_ROOM: RoomDetail = {
   author: '헤르만 헤세',
   totalPages: 345,
   coverUrl: demian,
-  myId: 1,
+  myId: MY_ID,
   members: [
     { id: 1, nickname: '김버들', readPage: 268 },
     { id: 2, nickname: '홍길동', readPage: 320 },
@@ -141,14 +148,6 @@ const DEMIAN_ROOM: RoomDetail = {
   ],
 }
 
-/** 100쪽씩 끊은 구간 (마지막 구간은 책 끝까지) */
-function toPageRanges(totalPages: number) {
-  return Array.from({ length: Math.ceil(totalPages / 100) }, (_, index) => ({
-    start: index * 100 + 1,
-    end: Math.min((index + 1) * 100, totalPages),
-  }))
-}
-
 /** 데미안 방 외에는 아직 이야기가 없는 방 (피그마 "교환독서방_처음") */
 export function getRoomDetailMock(roomId: number): RoomDetail | undefined {
   if (roomId === DEMIAN_ROOM.id) return DEMIAN_ROOM
@@ -171,3 +170,80 @@ export function getRoomDetailMock(roomId: number): RoomDetail | undefined {
     stories: [],
   }
 }
+
+/** 방 만들기 1단계 "내 책장에서 고르기" (피그마 "교환독서 만들기_01") */
+export const MY_SHELF_BOOKS_MOCK: ShelfBook[] = [
+  {
+    id: 1,
+    title: '혼모노',
+    author: '성해나',
+    totalPages: 268,
+    status: 'reading',
+    progress: 45,
+  },
+  {
+    id: 2,
+    title: '불편한 편의점',
+    author: '김호연',
+    coverUrl: convenienceStore,
+    totalPages: 268,
+    status: 'reading',
+    progress: 30,
+  },
+  {
+    id: 3,
+    title: '아몬드',
+    author: '손원평',
+    coverUrl: almond,
+    totalPages: 264,
+    status: 'done',
+    progress: 100,
+  },
+  {
+    id: 4,
+    title: '데미안',
+    author: '헤르만 헤세',
+    coverUrl: demian,
+    totalPages: 345,
+    status: 'done',
+    progress: 100,
+  },
+  {
+    id: 5,
+    title: '모순',
+    author: '양귀자',
+    coverUrl: contradiction,
+    totalPages: 296,
+    status: 'done',
+    progress: 100,
+  },
+]
+
+/** 초대코드로 참가할 수 있는 방 (피그마 "교환독서 참여하기" 시안: BDL-8K2Q / 1234) */
+export const JOINABLE_ROOMS_MOCK: JoinableRoom[] = [
+  {
+    roomId: 2,
+    code: 'BDL8K2Q',
+    password: '1234',
+    name: '수요일 데미안 클럽',
+    bookTitle: '데미안',
+    author: '헤르만 헤세',
+    totalPages: 345,
+    coverUrl: demian,
+    memberCount: 2,
+    maxMembers: 6,
+  },
+  {
+    // 인원이 가득 찬 방 (참가 불가 안내 확인용)
+    roomId: 3,
+    code: 'BDLFULL',
+    password: '0000',
+    name: '한강 읽기 모임',
+    bookTitle: '소년이 온다',
+    author: '한강',
+    totalPages: 216,
+    coverUrl: humanActs,
+    memberCount: 6,
+    maxMembers: 6,
+  },
+]

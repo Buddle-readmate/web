@@ -14,7 +14,8 @@ import StoryToolbar from '@/components/room/StoryToolbar'
 import GroupIcon from '@/components/shared/GroupIcon'
 import MaskIcon from '@/components/shared/MaskIcon'
 import { useOverlayParam } from '@/hooks/useOverlayParam'
-import { getRoomDetailMock } from '@/mocks/rooms'
+import { getRoomDetailMock, MY_ID } from '@/mocks/rooms'
+import { toRoomDetail, useCreatedRoomStore } from '@/stores/createdRoomStore'
 import { useRoomStoryStore } from '@/stores/roomStoryStore'
 import type { PageRange, RoomDetail, RoomMember, Story } from '@/types/room'
 import {
@@ -29,8 +30,11 @@ import {
 
 function RoomDetailPage() {
   const { roomId } = useParams()
-  // TODO: 교환독서방 API 연동 전까지 더미 데이터
-  const room = getRoomDetailMock(Number(roomId))
+  // TODO: 교환독서방 API 연동 전까지 더미 데이터 (+ 이번 접속에서 만든 방)
+  const createdRoom = useCreatedRoomStore((state) =>
+    state.rooms.find((item) => item.id === Number(roomId)),
+  )
+  const room = createdRoom ? toRoomDetail(createdRoom, MY_ID) : getRoomDetailMock(Number(roomId))
 
   if (!room) {
     return (

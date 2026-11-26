@@ -121,6 +121,8 @@
   --shadow-nav-m: 0 0 25px 0 rgb(45 56 18 / 0.2);
   --shadow-nav-w: 0 0 26.6px 0 rgb(125 122 115 / 0.17);
   --shadow-strong: 0 0 20px 0 rgb(45 56 18 / 0.2);
+  /* 웹 독서 캘린더 카드 */
+  --shadow-card: 0 4px 20px 0 rgb(0 0 0 / 0.05);
 
   /* 말풍선 그림자 (꼬리까지 같이 그려지도록 drop-shadow) */
   --drop-shadow-bubble-m: 0 2px 6.05px rgb(0 0 0 / 0.06);

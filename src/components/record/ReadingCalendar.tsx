@@ -49,7 +49,7 @@ function ReadingCalendar({
   return (
     <section
       aria-label="독서 캘린더"
-      className={`flex flex-col gap-3 overflow-hidden rounded-3xl bg-surface-white py-4 lg:rounded-2xl lg:py-6 ${className}`}
+      className={`flex flex-col gap-3 overflow-hidden rounded-3xl bg-surface-white py-4 lg:rounded-2xl lg:py-5 lg:shadow-card ${className}`}
     >
       <div className="flex items-center justify-between px-4 lg:px-6">
         <div className="flex items-center gap-2 lg:gap-3">
@@ -85,13 +85,14 @@ function ReadingCalendar({
         </button>
       </div>
 
-      <div className="grid grid-cols-7 text-center text-m-caption text-text-weak-brown lg:text-w-caption">
+      {/* 1440px 이상: 시안처럼 칸 70×100 (7칸 490px)으로 가운데 정렬 */}
+      <div className="grid grid-cols-7 text-center text-m-caption text-text-weak-brown lg:text-w-caption desktop:mx-auto desktop:w-[490px]">
         {WEEKDAYS.map((weekday) => (
           <span key={weekday}>{weekday}</span>
         ))}
       </div>
 
-      <div className="grid grid-cols-7">
+      <div className="grid grid-cols-7 desktop:mx-auto desktop:w-[490px]">
         {cells.map((day, index) => {
           if (day === null) return <span key={`blank-${index}`} className="aspect-[128/183]" />
           const dateKey = toDateKey(year, month, day)

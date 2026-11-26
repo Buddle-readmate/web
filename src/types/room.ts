@@ -48,6 +48,13 @@ export type RoomDetail = {
   totalPages: number
   coverUrl?: string
   myId: number
+  /** 방장 */
+  hostId: number
+  /** 화면 표시용 "BDL-8K2Q" */
+  inviteCode: string
+  password: string
+  /** 하루 목표 쪽수 */
+  dailyGoal: number
   members: RoomMember[]
   /** 이야기를 묶어 보여주는 쪽 구간 */
   pageRanges: PageRange[]

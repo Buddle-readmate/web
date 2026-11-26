@@ -3,21 +3,19 @@ import { useNavigate } from 'react-router-dom'
 import icBack from '@/assets/icons/ic-back.svg'
 import icCancel from '@/assets/icons/ic-cancel.svg'
 import icCheckOn from '@/assets/icons/ic-check-on.svg'
-import icCopy from '@/assets/icons/ic-copy.svg'
 import icSearch from '@/assets/icons/ic-search.svg'
 import { BookOption, RoomInfoCard, SelectedBookCard } from '@/components/room/BookCards'
+import InviteCodeBox from '@/components/room/InviteCodeBox'
 import PinInput, { PIN_LENGTH } from '@/components/room/PinInput'
 import RoomFlowModal from '@/components/room/RoomFlowModal'
+import RoomInfoFields from '@/components/room/RoomInfoFields'
 import Button from '@/components/shared/Button'
-import GroupIcon from '@/components/shared/GroupIcon'
 import MaskIcon from '@/components/shared/MaskIcon'
 import StepIndicator from '@/components/signup/StepIndicator'
 import { MAX_ROOM_MEMBERS, useCreatedRoomStore, type CreatedRoom } from '@/stores/createdRoomStore'
 import type { ShelfBook } from '@/types/room'
+import { validateRoomInfo, type DailyGoalPreset } from '@/utils/room'
 
-const NAME_MAX = 20
-const PAGES_MAX = 9999
-const GOAL_PRESETS = [10, 20, 30] as const
 const INPUT_STEPS = 3
 
 const STEP_TEXT = [
@@ -35,13 +33,7 @@ const ROOM_RULES = [
   '혼자 기록하고 싶다면 초대 없이 시작해도 돼요',
 ]
 
-const inputClassName =
-  'h-[52px] w-full rounded-2xl border-[1.5px] bg-surface-white px-4 text-m-body-l font-medium text-text-default caret-text-default outline-none placeholder:text-text-weak lg:text-w-body-l lg:font-medium'
-
 const labelClassName = 'text-m-label-s text-text-secondary lg:text-w-label-s'
-
-/** 숫자만 남기기 */
-const onlyDigits = (value: string) => value.replace(/\D/g, '')
 
 type RoomCreateFlowProps = {
   shelfBooks: ShelfBook[]
@@ -62,23 +54,15 @@ function RoomCreateFlow({ shelfBooks, onClose }: RoomCreateFlowProps) {
   const [book, setBook] = useState<ShelfBook | null>(null)
   const [name, setName] = useState('')
   const [pages, setPages] = useState('')
-  const [goalPreset, setGoalPreset] = useState<number | 'custom' | null>(null)
+  const [goalPreset, setGoalPreset] = useState<DailyGoalPreset | null>(null)
   const [customGoal, setCustomGoal] = useState('')
   const [password, setPassword] = useState('')
   const [createdRoom, setCreatedRoom] = useState<CreatedRoom | null>(null)
-  const [copyMessage, setCopyMessage] = useState('')
 
-  const totalPages = Number(pages)
-  const isPagesValid = Number.isInteger(totalPages) && totalPages >= 1 && totalPages <= PAGES_MAX
-  const dailyGoal = goalPreset === 'custom' ? Number(customGoal) : (goalPreset ?? 0)
-  const isGoalValid =
-    Number.isInteger(dailyGoal) && dailyGoal >= 1 && (!isPagesValid || dailyGoal <= totalPages)
+  const roomInfo = validateRoomInfo(name, pages, goalPreset, customGoal)
+  const { totalPages, dailyGoal } = roomInfo
 
-  const canGoNext = [
-    book !== null,
-    name.trim().length > 0 && isPagesValid && isGoalValid,
-    password.length === PIN_LENGTH,
-  ][step]
+  const canGoNext = [book !== null, roomInfo.isValid, password.length === PIN_LENGTH][step]
 
   // TODO: 책 검색 API 나오면 전체 책 검색으로 교체 (지금은 내 책장 안에서만 찾기)
   const trimmedQuery = query.trim()
@@ -103,18 +87,6 @@ function RoomCreateFlow({ shelfBooks, onClose }: RoomCreateFlowProps) {
   const goPrev = () => {
     if (step === 0) onClose()
     else setStep(step - 1)
-  }
-
-  const copyInvite = async () => {
-    if (!createdRoom) return
-    try {
-      await navigator.clipboard.writeText(
-        `[버들 교환독서] ${createdRoom.name}\n초대코드 ${createdRoom.inviteCode}\n비밀번호 ${createdRoom.password}`,
-      )
-      setCopyMessage('초대코드와 비밀번호를 복사했어요')
-    } catch {
-      setCopyMessage('복사하지 못했어요. 초대코드를 직접 적어 보내주세요')
-    }
   }
 
   const closeButton = (
@@ -149,33 +121,12 @@ function RoomCreateFlow({ shelfBooks, onClose }: RoomCreateFlowProps) {
               maxMembers={MAX_ROOM_MEMBERS}
               className="px-5 pt-6 pb-5"
             />
-            <div className="flex items-center gap-3 rounded-2xl bg-surface-green px-5 py-3">
-              <div className="flex min-w-0 flex-1 flex-col">
-                <p className="text-m-body-l font-medium text-text-default lg:text-w-body-l lg:font-medium">
-                  {createdRoom.inviteCode}
-                </p>
-                <p className="text-m-caption text-text-secondary lg:text-w-caption">
-                  비밀번호 {createdRoom.password}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={copyInvite}
-                className="flex h-10 items-center gap-2 rounded-2xl text-m-label-m text-text-secondary lg:text-w-label-m"
-              >
-                <GroupIcon
-                  src={icCopy}
-                  className="size-5"
-                  insetClassName="inset-[8.33%]"
-                  bleedClassName="inset-[-5%]"
-                />
-                복사하기
-              </button>
-            </div>
+            <InviteCodeBox
+              roomName={createdRoom.name}
+              inviteCode={createdRoom.inviteCode}
+              password={createdRoom.password}
+            />
           </div>
-          <p role="status" className="text-center text-m-caption text-text-green lg:text-w-caption">
-            {copyMessage}
-          </p>
         </div>
 
         <div className="px-6 pt-4 pb-[52px] lg:px-0 lg:pt-2 lg:pb-0">
@@ -293,109 +244,17 @@ function RoomCreateFlow({ shelfBooks, onClose }: RoomCreateFlowProps) {
           {step === 1 && book && (
             <div className="flex flex-col gap-5">
               <SelectedBookCard book={book} onChange={() => setStep(0)} />
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center justify-between">
-                    <label htmlFor="room-name" className={labelClassName}>
-                      방 이름
-                    </label>
-                    <span className="text-m-label-s text-text-weak lg:text-w-label-s">
-                      {name.length}/{NAME_MAX}자
-                    </span>
-                  </div>
-                  <input
-                    id="room-name"
-                    name="room-name"
-                    autoComplete="off"
-                    value={name}
-                    maxLength={NAME_MAX}
-                    onChange={(event) => setName(event.target.value)}
-                    placeholder="방 이름을 지정해주세요"
-                    className={`${inputClassName} border-border-default focus:border-border-green`}
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="room-pages" className={labelClassName}>
-                    총 쪽수
-                  </label>
-                  <input
-                    id="room-pages"
-                    name="room-pages"
-                    inputMode="numeric"
-                    autoComplete="off"
-                    value={pages}
-                    onChange={(event) => setPages(onlyDigits(event.target.value).slice(0, 4))}
-                    placeholder="총 쪽수를 입력해주세요"
-                    aria-invalid={pages !== '' && !isPagesValid}
-                    aria-describedby={
-                      pages !== '' && !isPagesValid ? 'room-pages-error' : undefined
-                    }
-                    className={`${inputClassName} ${pages !== '' && !isPagesValid ? 'border-border-error' : 'border-border-default focus:border-border-green'}`}
-                  />
-                  {pages !== '' && !isPagesValid && (
-                    <p
-                      id="room-pages-error"
-                      className="text-m-caption text-text-error lg:text-w-caption"
-                    >
-                      1쪽 이상으로 입력해주세요
-                    </p>
-                  )}
-                </div>
-
-                <fieldset className="flex flex-col gap-1">
-                  <legend className={`${labelClassName} mb-1`}>하루 목표 분량</legend>
-                  <div className="flex gap-1 lg:gap-2">
-                    {[...GOAL_PRESETS, 'custom' as const].map((preset) => {
-                      const isSelected = goalPreset === preset
-                      return (
-                        <label
-                          key={preset}
-                          className={`flex h-[52px] flex-1 cursor-pointer items-center justify-center rounded-2xl border-[1.5px] text-m-label-m text-text-secondary has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-border-green lg:text-w-label-m ${isSelected ? 'border-border-green bg-green-50' : 'border-border-default bg-surface-white'}`}
-                        >
-                          <input
-                            type="radio"
-                            name="daily-goal"
-                            checked={isSelected}
-                            onChange={() => setGoalPreset(preset)}
-                            className="sr-only"
-                          />
-                          {preset === 'custom' ? '기타' : `${preset}쪽`}
-                        </label>
-                      )
-                    })}
-                  </div>
-                  {goalPreset === 'custom' && (
-                    <>
-                      <label htmlFor="room-goal" className="sr-only">
-                        하루 목표 쪽수 직접 입력
-                      </label>
-                      <input
-                        id="room-goal"
-                        name="room-goal"
-                        inputMode="numeric"
-                        autoComplete="off"
-                        value={customGoal}
-                        onChange={(event) =>
-                          setCustomGoal(onlyDigits(event.target.value).slice(0, 4))
-                        }
-                        placeholder="하루에 읽을 쪽수를 입력해주세요"
-                        className={`${inputClassName} border-border-default focus:border-border-green`}
-                      />
-                    </>
-                  )}
-                  {isPagesValid && dailyGoal > 0 && (
-                    <p
-                      aria-live="polite"
-                      className={`text-m-caption lg:text-w-caption ${isGoalValid ? 'text-text-green' : 'text-text-error'}`}
-                    >
-                      {isGoalValid
-                        ? `하루 ${dailyGoal}쪽씩 읽으면 약 ${Math.ceil(totalPages / dailyGoal)}일 만에 완독할 수 있어요`
-                        : `하루 목표는 총 쪽수(${totalPages}쪽)를 넘지 않게 정해주세요`}
-                    </p>
-                  )}
-                </fieldset>
-              </div>
+              <RoomInfoFields
+                name={name}
+                onNameChange={setName}
+                pages={pages}
+                onPagesChange={setPages}
+                goalPreset={goalPreset}
+                onGoalPresetChange={setGoalPreset}
+                customGoal={customGoal}
+                onCustomGoalChange={setCustomGoal}
+                customLabel="기타"
+              />
             </div>
           )}
 

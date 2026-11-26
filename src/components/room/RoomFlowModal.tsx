@@ -1,4 +1,10 @@
-import { useEffect, useRef, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
+} from 'react'
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -25,6 +31,9 @@ function RoomFlowModal({ labelledBy, onClose, mobileVariant, children }: RoomFlo
   const dialogRef = useRef<HTMLDivElement>(null)
   const onCloseRef = useRef(onClose)
   const pressedOutsideRef = useRef(false)
+  // 창을 열기 직전 포커스 (닫으면 돌려줌)
+  // 안쪽 autoFocus가 먼저 포커스를 가져가기 전, 처음 그릴 때 한 번만 기억
+  const [previousFocus] = useState(() => document.activeElement as HTMLElement | null)
 
   useEffect(() => {
     onCloseRef.current = onClose
@@ -34,8 +43,8 @@ function RoomFlowModal({ labelledBy, onClose, mobileVariant, children }: RoomFlo
   useEffect(() => {
     const { overflow } = document.body.style
     document.body.style.overflow = 'hidden'
-    const previousFocus = document.activeElement as HTMLElement | null
-    dialogRef.current?.focus()
+    // 안쪽 요소가 autoFocus로 포커스를 먼저 가져갔으면 그대로 둠
+    if (!dialogRef.current?.contains(document.activeElement)) dialogRef.current?.focus()
     const handleKeyDown = (event: KeyboardEvent) => {
       // 안쪽 입력칸이 ESC를 먼저 쓴 경우(검색어 지우기 등)는 닫지 않음
       if (event.key === 'Escape' && !event.defaultPrevented) onCloseRef.current()
@@ -46,7 +55,7 @@ function RoomFlowModal({ labelledBy, onClose, mobileVariant, children }: RoomFlo
       window.removeEventListener('keydown', handleKeyDown)
       previousFocus?.focus?.()
     }
-  }, [])
+  }, [previousFocus])
 
   // Tab 포커스가 창 밖(뒤 목록)으로 빠지지 않게 처음·끝에서 돌리기
   const trapFocus = (event: ReactKeyboardEvent<HTMLDivElement>) => {

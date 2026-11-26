@@ -54,6 +54,8 @@
   --color-action-brown: var(--color-gray-300);
   --color-action-brown-selected: var(--color-brown-700);
   --color-surface-inverse: var(--color-gray-800);
+  /* 삭제·나가기 확인 버튼 배경 (피그마 surface/error, 팔레트에 없는 색) */
+  --color-surface-error: #ffeae1;
 
   /* 팔레트 (피그마 Design System > Color)
      Tailwind 기본 red/green/gray 색을 지워서, 피그마에 없는 단계(red-100 등)는 클래스가 안 생기게 함 */

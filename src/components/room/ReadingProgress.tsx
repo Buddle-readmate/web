@@ -5,13 +5,16 @@ type ReadingProgressProps = {
   totalPages: number
   members: RoomMember[]
   myId: number
+  /** row: 웹 오른쪽 위 한 줄 / card: 모바일 멤버 탭 카드 */
+  variant?: 'row' | 'card'
 }
 
 const toPercent = (page: number, total: number) =>
   total > 0 ? Math.min(100, Math.round((page / total) * 100)) : 0
 
-/** 웹: 읽은 쪽수 / 총 쪽수 + 멤버별 위치가 보이는 진행 막대 */
-function ReadingProgress({ totalPages, members, myId }: ReadingProgressProps) {
+/** 읽은 쪽수 / 총 쪽수 + 멤버별 위치가 보이는 진행 막대 */
+function ReadingProgress({ totalPages, members, myId, variant = 'row' }: ReadingProgressProps) {
+  const isCard = variant === 'card'
   const me = members.find((member) => member.id === myId)
   const myPage = me?.readPage ?? 0
   const myPercent = toPercent(myPage, totalPages)
@@ -19,15 +22,20 @@ function ReadingProgress({ totalPages, members, myId }: ReadingProgressProps) {
   const ordered = [...members].sort((a, b) => Number(a.id === myId) - Number(b.id === myId))
 
   return (
-    <section aria-label="읽기 진행" className="flex items-end">
-      <div className="flex w-[140px] shrink-0 flex-col">
+    <section
+      aria-label="읽기 진행"
+      className={
+        isCard ? 'flex flex-col gap-5 rounded-3xl bg-surface-gray-light p-5' : 'flex items-end'
+      }
+    >
+      <div className={`flex shrink-0 flex-col ${isCard ? '' : 'w-[140px]'}`}>
         <span className="text-m-body-m text-text-weak">읽은 쪽수 / 총 쪽수</span>
         <span className="text-m-head-m text-text-secondary-brown">
           <span className="text-text-green">{myPage}쪽</span> / {totalPages}쪽
         </span>
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-1 py-1">
+      <div className={`flex min-w-0 flex-1 flex-col ${isCard ? 'gap-1.5' : 'gap-1 py-1'}`}>
         <ul className="relative h-8">
           {ordered.map((member) => {
             const isMe = member.id === myId
@@ -59,7 +67,9 @@ function ReadingProgress({ totalPages, members, myId }: ReadingProgressProps) {
                     aria-hidden
                     className="absolute -top-[23px] left-1/2 flex -translate-x-1/2 flex-col items-center"
                   >
-                    <span className="rounded-full bg-action-brown-selected px-2.5 py-0.5 text-w-label-s text-text-contrast">
+                    <span
+                      className={`rounded-full bg-action-brown-selected py-0.5 text-text-contrast ${isCard ? 'px-2 text-m-caption' : 'px-2.5 text-w-label-s'}`}
+                    >
                       {myPercent}%
                     </span>
                     <img src={icTagArrow} alt="" width={10} height={5} className="-scale-y-100" />
@@ -76,7 +86,7 @@ function ReadingProgress({ totalPages, members, myId }: ReadingProgressProps) {
           aria-valuemin={0}
           aria-valuemax={100}
           aria-label="내 진행률"
-          className="flex h-4 rounded-full bg-surface-page p-0.5"
+          className={`flex rounded-full bg-surface-page p-0.5 ${isCard ? 'h-3.5' : 'h-4'}`}
         >
           <span
             className="rounded-full bg-border-green"

@@ -96,3 +96,21 @@ export type NewRoomInput = {
   dailyGoal: number
   password: string
 }
+
+/** 페이지별 이야기에 남긴 생각 (답글이면 parentId) */
+export type Thought = {
+  id: number
+  authorId: number
+  content: string
+  /** 표시용 "26.11.14" */
+  createdAt: string
+  /** 좋아요 누른 멤버 */
+  likedBy: number[]
+  /** 답글이면 원래 생각 id */
+  parentId?: number
+  /** @멘션한 멤버 */
+  mentionId?: number
+}
+
+/** 이야기 상세로 이동할 때 넘기는 값: 방 화면에서 이미 "눌러서 확인하기"로 가림을 푼 경우 */
+export type StoryLinkState = { revealed?: boolean }

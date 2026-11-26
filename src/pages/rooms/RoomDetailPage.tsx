@@ -20,9 +20,10 @@ import GroupIcon from '@/components/shared/GroupIcon'
 import MaskIcon from '@/components/shared/MaskIcon'
 import SheetModal from '@/components/shared/SheetModal'
 import { useOverlayParam } from '@/hooks/useOverlayParam'
-import { getRoomDetailMock, MY_ID, MY_SHELF_BOOKS_MOCK } from '@/mocks/rooms'
-import { MAX_ROOM_MEMBERS, toRoomDetail, useCreatedRoomStore } from '@/stores/createdRoomStore'
-import { applyRoomEdit, useRoomEditStore } from '@/stores/roomEditStore'
+import { useRoom, useRoomStories } from '@/hooks/useRoom'
+import { MY_SHELF_BOOKS_MOCK } from '@/mocks/rooms'
+import { MAX_ROOM_MEMBERS } from '@/stores/createdRoomStore'
+import { useRoomEditStore } from '@/stores/roomEditStore'
 import { useRoomStoryStore } from '@/stores/roomStoryStore'
 import type { PageRange, RoomDetail, RoomMember, Story } from '@/types/room'
 import {
@@ -37,21 +38,10 @@ import {
 
 function RoomDetailPage() {
   const { roomId } = useParams()
-  // TODO: 교환독서방 API 연동 전까지 더미 데이터 (+ 이번 접속에서 만든 방)
-  const createdRoom = useCreatedRoomStore((state) =>
-    state.rooms.find((item) => item.id === Number(roomId)),
-  )
-  const baseRoom = createdRoom
-    ? toRoomDetail(createdRoom, MY_ID)
-    : getRoomDetailMock(Number(roomId))
-  // 설정에서 바꾼 정보·내보낸 멤버 반영, 삭제했거나 나간 방은 없는 방으로
-  const edit = useRoomEditStore((state) => state.edits[Number(roomId)])
-  const removedIds = useRoomEditStore((state) => state.removedMembers[Number(roomId)])
-  const isClosed = useRoomEditStore((state) => state.closedRoomIds.includes(Number(roomId)))
-  const room = baseRoom && !isClosed ? applyRoomEdit(baseRoom, edit, removedIds) : undefined
+  const { room, isClosed } = useRoom(Number(roomId))
 
   // 삭제했거나 나간 방 (뒤로가기로 다시 온 경우 포함) → 목록으로
-  if (baseRoom && isClosed) return <Navigate to="/rooms" replace />
+  if (isClosed) return <Navigate to="/rooms" replace />
 
   if (!room) {
     return (
@@ -101,9 +91,8 @@ function RoomDetailView({ room }: RoomDetailViewProps) {
   const currentRange = findCurrentRange(room.pageRanges, myPage)
 
   // TODO: 이야기 등록 API 연동 (지금은 더미 데이터 + 이번 접속에서 등록한 이야기)
-  const addedStories = useRoomStoryStore((state) => state.addedStories[room.id])
   const saveStory = useRoomStoryStore((state) => state.addStory)
-  const stories = addedStories ? [...room.stories, ...addedStories] : room.stories
+  const stories = useRoomStories(room)
   const [showUnread, setShowUnread] = useState(true)
   const [sort, setSort] = useState<SortOrder>('desc')
   const [revealedIds, setRevealedIds] = useState<Set<number>>(() => new Set())

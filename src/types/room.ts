@@ -111,3 +111,6 @@ export type Thought = {
   /** @멘션한 멤버 */
   mentionId?: number
 }
+
+/** 이야기 상세로 이동할 때 넘기는 값: 방 화면에서 이미 "눌러서 확인하기"로 가림을 푼 경우 */
+export type StoryLinkState = { revealed?: boolean }

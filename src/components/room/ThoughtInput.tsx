@@ -21,7 +21,11 @@ type ThoughtInputProps = {
 }
 
 /** 입력 끝의 "@검색어" (없으면 null) */
-const getMentionQuery = (text: string) => text.match(/@([^\s@]*)$/)?.[1] ?? null
+// @는 글 맨 처음이나 띄어쓰기 바로 뒤에 올 때만 멘션으로 봄 (abc@지 같은 글자 중간은 제외)
+const MENTION_AT_END = /(^|\s)@([^\s@]*)$/
+const getMentionQuery = (text: string) => text.match(MENTION_AT_END)?.[2] ?? null
+/** 끝의 "@검색어"만 지우고 앞 띄어쓰기는 남기기 */
+const removeMentionQuery = (text: string) => text.replace(MENTION_AT_END, '$1')
 
 /**
  * "나만의 생각을 남겨주세요" 입력창
@@ -41,7 +45,7 @@ function ThoughtInput({ members, target, onTargetChange, onSubmit, ref }: Though
 
   const chooseMention = (member: RoomMember) => {
     // "@검색어"를 지우고 앞에 초록 @이름으로 붙이기
-    setText((prev) => prev.replace(/@([^\s@]*)$/, '').trimEnd())
+    setText((prev) => removeMentionQuery(prev).trimEnd())
     onTargetChange({ parentId: target.parentId, mention: member })
     setActiveIndex(0)
   }
@@ -67,7 +71,7 @@ function ThoughtInput({ members, target, onTargetChange, onSubmit, ref }: Though
       }
       if (event.key === 'Escape') {
         event.preventDefault()
-        setText((prev) => prev.replace(/@([^\s@]*)$/, ''))
+        setText(removeMentionQuery)
         return
       }
     }
@@ -79,7 +83,8 @@ function ThoughtInput({ members, target, onTargetChange, onSubmit, ref }: Though
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
-    if (!canSubmit || isListOpen) return
+    // 멤버 목록이 열려 있어도 등록 버튼은 그대로 등록 (Enter는 위에서 멤버 고르기로 처리)
+    if (!canSubmit) return
     onSubmit(text.trim())
     setText('')
   }

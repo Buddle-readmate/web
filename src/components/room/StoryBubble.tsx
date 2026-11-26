@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import icBubbleTailLeft from '@/assets/icons/ic-bubble-tail-left.svg'
 import icBubbleTailRight from '@/assets/icons/ic-bubble-tail-right.svg'
 import MemberAvatars from '@/components/room/MemberAvatars'
-import type { RoomMember, Story } from '@/types/room'
+import type { RoomMember, Story, StoryLinkState } from '@/types/room'
 
 type StoryBubbleProps = {
   roomId: number
@@ -42,6 +42,8 @@ function StoryBubble({
   onReveal,
 }: StoryBubbleProps) {
   const storyUrl = `/rooms/${roomId}/stories/${story.id}`
+  // 버튼이 보인다는 건 안 가려졌거나 "눌러서 확인하기"로 이미 연 것 → 상세에서 다시 가리지 않게
+  const revealedState: StoryLinkState = { revealed: true }
 
   const bubble = (
     <div
@@ -75,6 +77,7 @@ function StoryBubble({
           ) : story.myRepliedAt ? (
             <Link
               to={storyUrl}
+              state={revealedState}
               aria-label={`${story.myRepliedAt}에 남긴 내 생각 보기`}
               className={`${actionClassName} border border-border-default bg-action-white text-text-weak`}
             >
@@ -82,7 +85,11 @@ function StoryBubble({
               <span className="hidden lg:inline">&nbsp;기록</span>
             </Link>
           ) : (
-            <Link to={storyUrl} className={`${actionClassName} bg-action-green text-text-contrast`}>
+            <Link
+              to={storyUrl}
+              state={revealedState}
+              className={`${actionClassName} bg-action-green text-text-contrast`}
+            >
               내 생각 남기기
             </Link>
           )}

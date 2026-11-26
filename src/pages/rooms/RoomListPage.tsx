@@ -12,6 +12,7 @@ import MaskIcon from '@/components/shared/MaskIcon'
 import { useOverlayParam } from '@/hooks/useOverlayParam'
 import { JOINABLE_ROOMS_MOCK, MY_SHELF_BOOKS_MOCK, ROOMS_MOCK } from '@/mocks/rooms'
 import { toJoinableRoom, toRoomSummary, useCreatedRoomStore } from '@/stores/createdRoomStore'
+import { applySummaryEdit, useRoomEditStore } from '@/stores/roomEditStore'
 import type { RoomFilter } from '@/types/room'
 
 const EMPTY_TEXT: Record<RoomFilter, { title: string; description: string }> = {
@@ -32,7 +33,12 @@ function RoomListPage() {
   const isEmptyMock = import.meta.env.DEV && searchParams.get('mock') === 'empty'
   // 이번 접속에서 만든 방은 맨 앞에
   const createdRooms = useCreatedRoomStore((state) => state.rooms)
+  // 설정에서 바꾼 이름·책 반영, 삭제했거나 나간 방은 빼기
+  const edits = useRoomEditStore((state) => state.edits)
+  const closedRoomIds = useRoomEditStore((state) => state.closedRoomIds)
   const rooms = [...createdRooms.map(toRoomSummary), ...(isEmptyMock ? [] : ROOMS_MOCK)]
+    .filter((room) => !closedRoomIds.includes(room.id))
+    .map((room) => applySummaryEdit(room, edits[room.id]))
   // 방 만들기·코드로 참가하기는 ?modal= 로 목록 위에 띄움 (뒤로가기로 닫힘)
   const modal = useOverlayParam('modal')
   // 필터는 주소(?filter=)에 남겨서 새로고침·뒤로가기에도 유지 (시안 기본: 참여중)

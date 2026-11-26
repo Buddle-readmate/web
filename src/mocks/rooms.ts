@@ -67,6 +67,11 @@ const DEMIAN_ROOM: RoomDetail = {
   totalPages: 345,
   coverUrl: demian,
   myId: MY_ID,
+  // 데미안 방은 내가 방장 (설정: 수정·삭제·내보내기 확인용)
+  hostId: MY_ID,
+  inviteCode: 'BDL-8K2Q',
+  password: '1234',
+  dailyGoal: 20,
   members: [
     { id: 1, nickname: '김버들', readPage: 268 },
     { id: 2, nickname: '홍길동', readPage: 320 },
@@ -161,6 +166,11 @@ export function getRoomDetailMock(roomId: number): RoomDetail | undefined {
     totalPages: summary.totalPages,
     coverUrl: summary.coverUrl,
     myId: DEMIAN_ROOM.myId,
+    // 나머지 방은 다른 사람이 방장 (설정: 일반 멤버 나가기 확인용)
+    hostId: 2,
+    inviteCode: `BDL-${String(summary.id).padStart(4, '0')}`,
+    password: '0000',
+    dailyGoal: 20,
     // 나는 목록 진행률만큼, 다른 멤버는 조금씩 덜 읽은 상태
     members: DEMIAN_ROOM.members.map((member, index) => ({
       ...member,

@@ -74,10 +74,11 @@ export function BookOption({ book, isSelected, onSelect }: BookOptionProps) {
 
 type SelectedBookCardProps = {
   book: ShelfBook
-  onChange: () => void
+  /** 없으면 변경 버튼 안 보임 (일반 멤버 설정) */
+  onChange?: () => void
 }
 
-/** 방 만들기 2·3단계: 고른 책 + 변경 */
+/** 고른 책 + 변경 (방 만들기 2·3단계 · 방 설정) */
 export function SelectedBookCard({ book, onChange }: SelectedBookCardProps) {
   return (
     <div className="flex items-center gap-3 rounded-2xl border-[1.5px] border-border-default bg-surface-gray-light px-4 py-3">
@@ -88,14 +89,16 @@ export function SelectedBookCard({ book, onChange }: SelectedBookCardProps) {
         </p>
         <MetaLine items={[book.author, bookStatus(book)]} />
       </div>
-      <button
-        type="button"
-        onClick={onChange}
-        aria-label={`책 변경 (지금: ${book.title})`}
-        className="p-1 text-m-label-m text-text-green lg:text-w-label-m"
-      >
-        변경
-      </button>
+      {onChange && (
+        <button
+          type="button"
+          onClick={onChange}
+          aria-label={`책 변경 (지금: ${book.title})`}
+          className="p-1 text-m-label-m text-text-green lg:text-w-label-m"
+        >
+          변경
+        </button>
+      )}
     </div>
   )
 }

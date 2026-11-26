@@ -50,3 +50,44 @@ export function formatToday() {
   const date = String(today.getDate()).padStart(2, '0')
   return `${today.getFullYear()}.${month}.${date}`
 }
+
+export const ROOM_NAME_MAX = 20
+export const ROOM_PAGES_MAX = 9999
+export const DAILY_GOAL_PRESETS = [10, 20, 30] as const
+
+/** 하루 목표: 10·20·30쪽 중 하나, 또는 직접 입력 */
+export type DailyGoalPreset = (typeof DAILY_GOAL_PRESETS)[number] | 'custom'
+
+/** 숫자만 남기기 */
+export const onlyDigits = (value: string) => value.replace(/\D/g, '')
+
+/** 저장된 하루 목표 → 칩 선택값 (10·20·30이 아니면 직접 입력) */
+export function toGoalPreset(dailyGoal: number): DailyGoalPreset {
+  return (DAILY_GOAL_PRESETS as readonly number[]).includes(dailyGoal)
+    ? (dailyGoal as DailyGoalPreset)
+    : 'custom'
+}
+
+/** 방 이름·총 쪽수·하루 목표 입력값 확인 */
+export function validateRoomInfo(
+  name: string,
+  pages: string,
+  goalPreset: DailyGoalPreset | null,
+  customGoal: string,
+) {
+  const totalPages = Number(pages)
+  const isNameValid = name.trim().length > 0
+  const isPagesValid =
+    Number.isInteger(totalPages) && totalPages >= 1 && totalPages <= ROOM_PAGES_MAX
+  const dailyGoal = goalPreset === 'custom' ? Number(customGoal) : (goalPreset ?? 0)
+  const isGoalValid =
+    Number.isInteger(dailyGoal) && dailyGoal >= 1 && (!isPagesValid || dailyGoal <= totalPages)
+  return {
+    totalPages,
+    dailyGoal,
+    isNameValid,
+    isPagesValid,
+    isGoalValid,
+    isValid: isNameValid && isPagesValid && isGoalValid,
+  }
+}

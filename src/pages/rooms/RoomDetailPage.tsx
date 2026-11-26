@@ -5,17 +5,24 @@ import icMembers from '@/assets/icons/ic-members.svg'
 import icPlus from '@/assets/icons/ic-plus.svg'
 import icSetting from '@/assets/icons/ic-setting.svg'
 import icChevronRight16 from '@/assets/icons/ic-chevron-right-16.svg'
+import ConfirmDialog from '@/components/room/ConfirmDialog'
+import FriendsPopover from '@/components/room/FriendsPopover'
+import InviteCodeBox from '@/components/room/InviteCodeBox'
+import MemberList from '@/components/room/MemberList'
 import ReadingProgress from '@/components/room/ReadingProgress'
 import RoomBookInfo from '@/components/room/RoomBookInfo'
 import RoomEmptyState from '@/components/room/RoomEmptyState'
+import RoomSettingsPanel from '@/components/room/RoomSettingsPanel'
 import StoryBubble from '@/components/room/StoryBubble'
 import StoryCreateSheet from '@/components/room/StoryCreateSheet'
 import StoryToolbar from '@/components/room/StoryToolbar'
 import GroupIcon from '@/components/shared/GroupIcon'
 import MaskIcon from '@/components/shared/MaskIcon'
+import SheetModal from '@/components/shared/SheetModal'
 import { useOverlayParam } from '@/hooks/useOverlayParam'
-import { getRoomDetailMock, MY_ID } from '@/mocks/rooms'
-import { toRoomDetail, useCreatedRoomStore } from '@/stores/createdRoomStore'
+import { getRoomDetailMock, MY_ID, MY_SHELF_BOOKS_MOCK } from '@/mocks/rooms'
+import { MAX_ROOM_MEMBERS, toRoomDetail, useCreatedRoomStore } from '@/stores/createdRoomStore'
+import { applyRoomEdit, useRoomEditStore } from '@/stores/roomEditStore'
 import { useRoomStoryStore } from '@/stores/roomStoryStore'
 import type { PageRange, RoomDetail, RoomMember, Story } from '@/types/room'
 import {
@@ -34,7 +41,14 @@ function RoomDetailPage() {
   const createdRoom = useCreatedRoomStore((state) =>
     state.rooms.find((item) => item.id === Number(roomId)),
   )
-  const room = createdRoom ? toRoomDetail(createdRoom, MY_ID) : getRoomDetailMock(Number(roomId))
+  const baseRoom = createdRoom
+    ? toRoomDetail(createdRoom, MY_ID)
+    : getRoomDetailMock(Number(roomId))
+  // 설정에서 바꾼 정보·내보낸 멤버 반영, 삭제했거나 나간 방은 없는 방으로
+  const edit = useRoomEditStore((state) => state.edits[Number(roomId)])
+  const removedIds = useRoomEditStore((state) => state.removedMembers[Number(roomId)])
+  const isClosed = useRoomEditStore((state) => state.closedRoomIds.includes(Number(roomId)))
+  const room = baseRoom && !isClosed ? applyRoomEdit(baseRoom, edit, removedIds) : undefined
 
   if (!room) {
     return (
@@ -65,7 +79,20 @@ function RoomDetailView({ room }: RoomDetailViewProps) {
   const [searchParams, setSearchParams] = useSearchParams()
   // 이야기 생성은 ?sheet=story 로 띄움 (뒤로가기로 닫힘)
   const sheet = useOverlayParam('sheet')
+  // 설정은 ?panel=settings 로 띄움 (모바일 전체 화면 / 웹 왼쪽 칸)
+  const panel = useOverlayParam('panel')
   const tab = searchParams.get('tab') === 'members' ? 'members' : 'stories'
+  const isHost = room.hostId === room.myId
+  const isFull = room.members.length >= MAX_ROOM_MEMBERS
+
+  const editRoom = useRoomEditStore((state) => state.editRoom)
+  const removeMember = useRoomEditStore((state) => state.removeMember)
+  const closeRoom = useRoomEditStore((state) => state.closeRoom)
+  // 웹: 멤버 아이콘 아래 친구 목록 / 모바일: 초대하기 바텀시트 / 내보낼 멤버 확인
+  const [isFriendsOpen, setIsFriendsOpen] = useState(false)
+  const [isInviteOpen, setIsInviteOpen] = useState(false)
+  const [removeTarget, setRemoveTarget] = useState<RoomMember | null>(null)
+  const friendsButtonRef = useRef<HTMLButtonElement>(null)
 
   const myPage = room.members.find((member) => member.id === room.myId)?.readPage ?? 0
   const currentRange = findCurrentRange(room.pageRanges, myPage)
@@ -126,6 +153,19 @@ function RoomDetailView({ room }: RoomDetailViewProps) {
 
   const reveal = (storyId: number) => {
     setRevealedIds((prev) => new Set(prev).add(storyId))
+  }
+
+  // 방 삭제·나가기: 목록으로 (이 방 주소로 되돌아오지 않게 replace)
+  const leaveRoom = () => {
+    closeRoom(room.id)
+    navigate('/rooms', { replace: true })
+  }
+
+  const confirmRemove = () => {
+    if (!removeTarget) return
+    removeMember(room.id, removeTarget.id)
+    setStatusMessage(`${removeTarget.nickname}님을 내보냈어요`)
+    setRemoveTarget(null)
   }
 
   const addStory = ({ page, content }: { page: number; content: string }) => {
@@ -193,16 +233,13 @@ function RoomDetailView({ room }: RoomDetailViewProps) {
     />
   )
 
-  const membersPlaceholder = (
-    // TODO: 교환독서방_멤버 화면 구현
-    <p className="py-[88px] text-center text-m-body-l text-text-weak lg:text-w-body-l">
-      멤버 화면은 준비 중이에요
-    </p>
-  )
-
   const settingButton = (
-    // TODO: 교환독서방_설정 화면 연결
-    <button type="button" aria-label="방 설정" className="flex">
+    <button
+      type="button"
+      aria-label="방 설정"
+      onClick={() => panel.open('settings')}
+      className="flex"
+    >
       <GroupIcon
         src={icSetting}
         className="size-6 lg:size-7"
@@ -270,8 +307,42 @@ function RoomDetailView({ room }: RoomDetailViewProps) {
               id="room-panel-members"
               aria-labelledby="room-tab-members"
               hidden={tab !== 'members'}
+              className="pt-1"
             >
-              {membersPlaceholder}
+              <div className="flex flex-col gap-5">
+                <ReadingProgress
+                  totalPages={room.totalPages}
+                  members={room.members}
+                  myId={room.myId}
+                  variant="card"
+                />
+                <div className="flex flex-col gap-2">
+                  <h2 className="text-m-body-l font-medium text-text-secondary">
+                    멤버 {room.members.length}/{MAX_ROOM_MEMBERS}
+                  </h2>
+                  <div className="flex flex-col">
+                    {/* 최대 인원이면 더 초대할 수 없음 */}
+                    <button
+                      type="button"
+                      disabled={isFull}
+                      onClick={() => setIsInviteOpen(true)}
+                      className="flex items-center gap-2 rounded-2xl bg-green-50 py-3 pl-3 text-m-body-l font-medium text-text-green disabled:bg-surface-gray-light disabled:text-text-weak"
+                    >
+                      <MaskIcon
+                        src={icPlus}
+                        className={`size-5 ${isFull ? 'bg-text-weak' : 'bg-text-green'}`}
+                      />
+                      {isFull ? `인원이 가득 찼어요 (최대 ${MAX_ROOM_MEMBERS}명)` : '초대하기'}
+                    </button>
+                    <MemberList
+                      members={room.members}
+                      hostId={room.hostId}
+                      myId={room.myId}
+                      onRemove={isHost ? setRemoveTarget : undefined}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
             <div
               role="tabpanel"
@@ -311,16 +382,18 @@ function RoomDetailView({ room }: RoomDetailViewProps) {
 
       {/* ───────── 웹 ───────── */}
       <aside className="hidden shrink-0 flex-col gap-6 bg-surface-page pt-[52px] pb-10 pl-10 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:w-[360px] lg:overflow-y-auto desktop:w-[482px] desktop:pl-[100px]">
-        <header className="flex h-14 items-center justify-between pr-10">
+        {/* 친구 목록 팝오버가 헤더 왼쪽 끝에 맞춰 뜨도록 relative */}
+        <header className="relative flex h-14 items-center justify-between pr-10">
           <button type="button" aria-label="뒤로" onClick={goBack} className="flex">
             <img src={icBack} alt="" width={28} height={28} className="size-7" />
           </button>
           <div className="flex items-center gap-5">
             <button
+              ref={friendsButtonRef}
               type="button"
-              aria-label="멤버 보기"
-              aria-pressed={tab === 'members'}
-              onClick={() => changeTab(tab === 'members' ? 'stories' : 'members')}
+              aria-label="친구 목록"
+              aria-expanded={isFriendsOpen}
+              onClick={() => setIsFriendsOpen((open) => !open)}
               className="flex"
             >
               <GroupIcon
@@ -331,6 +404,15 @@ function RoomDetailView({ room }: RoomDetailViewProps) {
               />
             </button>
             {settingButton}
+            {isFriendsOpen && (
+              <FriendsPopover
+                room={room}
+                isHost={isHost}
+                onRemove={setRemoveTarget}
+                onClose={() => setIsFriendsOpen(false)}
+                triggerRef={friendsButtonRef}
+              />
+            )}
           </div>
         </header>
 
@@ -353,10 +435,7 @@ function RoomDetailView({ room }: RoomDetailViewProps) {
                   <button
                     type="button"
                     aria-current={isSelected ? 'true' : undefined}
-                    onClick={() => {
-                      setSelectedStart(key)
-                      changeTab('stories')
-                    }}
+                    onClick={() => setSelectedStart(key)}
                     className={`flex w-full items-center rounded-l-3xl px-6 py-5 text-w-label-l ${isSelected ? 'bg-surface-gray-light text-text-secondary-brown' : 'text-text-weak'}`}
                   >
                     {label}
@@ -370,35 +449,63 @@ function RoomDetailView({ room }: RoomDetailViewProps) {
 
       <main className="hidden min-w-0 flex-1 flex-col gap-6 px-10 pt-[52px] pb-[180px] lg:flex desktop:pr-[100px] desktop:pl-[72px]">
         <ReadingProgress totalPages={room.totalPages} members={room.members} myId={room.myId} />
-        {tab === 'members' ? (
-          membersPlaceholder
-        ) : (
-          <>
-            {toolbar}
-            <WebStoryList
-              hasStories={hasStories}
-              range={selectedStart === 'all' ? undefined : selectedRange}
-              stories={selectedRange ? getStoriesInRange(visibleStories, selectedRange, sort) : []}
-              renderBubble={renderBubble}
-              createButton={createButton}
-            />
-          </>
-        )}
+        {toolbar}
+        <WebStoryList
+          hasStories={hasStories}
+          range={selectedStart === 'all' ? undefined : selectedRange}
+          stories={selectedRange ? getStoriesInRange(visibleStories, selectedRange, sort) : []}
+          renderBubble={renderBubble}
+          createButton={createButton}
+        />
       </main>
 
-      {tab === 'stories' && (
-        <button
-          type="button"
-          aria-label="새로운 이야기 생성"
-          onClick={() => sheet.open('story')}
-          className="fixed right-6 bottom-[52px] z-30 flex size-[74px] items-center justify-center rounded-full bg-action-green shadow-strong lg:right-10 lg:bottom-[72px] lg:size-[72px] desktop:right-[100px]"
-        >
-          <MaskIcon src={icPlus} className="size-[44.4px] bg-surface-white" />
-        </button>
-      )}
+      <button
+        type="button"
+        aria-label="새로운 이야기 생성"
+        onClick={() => sheet.open('story')}
+        // 모바일 멤버 탭에서는 숨김 (웹은 오른쪽이 늘 이야기 목록)
+        className={`fixed right-6 bottom-[52px] z-30 size-[74px] items-center justify-center rounded-full bg-action-green shadow-strong lg:right-10 lg:bottom-[72px] lg:flex lg:size-[72px] desktop:right-[100px] ${tab === 'members' ? 'hidden' : 'flex'}`}
+      >
+        <MaskIcon src={icPlus} className="size-[44.4px] bg-surface-white" />
+      </button>
 
       {sheet.value === 'story' && (
         <StoryCreateSheet totalPages={room.totalPages} onClose={sheet.close} onSubmit={addStory} />
+      )}
+
+      {/* 모바일: 화면 전체 / 웹: 왼쪽 칸 자리에 겹쳐서 */}
+      {panel.value === 'settings' && (
+        <div className="fixed inset-0 z-40 flex flex-col bg-surface-page lg:right-auto lg:w-[360px] lg:pt-[52px] lg:pr-10 lg:pl-10 desktop:w-[482px] desktop:pl-[100px]">
+          <RoomSettingsPanel
+            room={room}
+            isHost={isHost}
+            shelfBooks={MY_SHELF_BOOKS_MOCK}
+            onClose={panel.close}
+            onSave={(next) => editRoom(room.id, next)}
+            onDelete={leaveRoom}
+            onLeave={leaveRoom}
+          />
+        </div>
+      )}
+
+      {isInviteOpen && (
+        <SheetModal title="친구 초대" onClose={() => setIsInviteOpen(false)}>
+          <InviteCodeBox
+            roomName={room.name}
+            inviteCode={room.inviteCode}
+            password={room.password}
+          />
+        </SheetModal>
+      )}
+
+      {removeTarget && (
+        <ConfirmDialog
+          title="친구를 내보낼까요?"
+          description={`${removeTarget.nickname}님이 작성한 모든 기록이 삭제되며, 복구할 수 없어요`}
+          confirmLabel="내보내기"
+          onConfirm={confirmRemove}
+          onCancel={() => setRemoveTarget(null)}
+        />
       )}
     </div>
   )

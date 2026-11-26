@@ -35,7 +35,8 @@ function RoomFlowModal({ labelledBy, onClose, mobileVariant, children }: RoomFlo
     const { overflow } = document.body.style
     document.body.style.overflow = 'hidden'
     const previousFocus = document.activeElement as HTMLElement | null
-    dialogRef.current?.focus()
+    // 안쪽 요소가 autoFocus로 포커스를 먼저 가져갔으면 그대로 둠
+    if (!dialogRef.current?.contains(document.activeElement)) dialogRef.current?.focus()
     const handleKeyDown = (event: KeyboardEvent) => {
       // 안쪽 입력칸이 ESC를 먼저 쓴 경우(검색어 지우기 등)는 닫지 않음
       if (event.key === 'Escape' && !event.defaultPrevented) onCloseRef.current()

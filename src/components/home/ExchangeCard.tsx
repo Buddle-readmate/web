@@ -12,13 +12,18 @@ function ExchangeCard({ room, className = '' }: ExchangeCardProps) {
     <article
       className={`flex h-32 shrink-0 items-center overflow-hidden rounded-2xl border-[1.5px] border-border-strong bg-surface-white shadow-weak lg:h-[195px] ${className}`}
     >
+      {/* 아이패드 가로(1280px 미만)는 카드가 좁아 표지·여백을 줄여 방 이름 자리 확보 */}
       {room.coverUrl ? (
-        <img src={room.coverUrl} alt="" className="h-full w-[84px] shrink-0 object-cover lg:w-32" />
+        <img
+          src={room.coverUrl}
+          alt=""
+          className="h-full w-[84px] shrink-0 object-cover lg:w-28 xl:w-32"
+        />
       ) : (
-        <span className="h-full w-[84px] shrink-0 bg-border-strong lg:w-32" />
+        <span className="h-full w-[84px] shrink-0 bg-border-strong lg:w-28 xl:w-32" />
       )}
 
-      <div className="flex h-full min-w-0 flex-1 flex-col justify-between p-4 lg:p-6">
+      <div className="flex h-full min-w-0 flex-1 flex-col justify-between p-4 xl:p-6">
         <div className="flex items-start gap-2">
           <div className="flex min-w-0 flex-1 flex-col gap-1 lg:gap-2">
             <div className="flex flex-col">

@@ -216,3 +216,26 @@
   --text-caption--letter-spacing: -0.3px;
   --text-caption--font-weight: 500;
 }
+
+/* 아이패드 가로(1024~1279px): 레이아웃은 시안 비율대로 줄어드는데 글씨는 웹 크기라 커 보여서
+   웹 글씨(w-)를 모바일 글씨(m-) 크기로 맞춤. 1280px 이상은 웹 시안 그대로 */
+@media (width >= 64rem) and (width < 80rem) {
+  :root {
+    --text-w-head-l: 24px;
+    --text-w-head-l--line-height: 34px;
+    --text-w-head-m: 20px;
+    --text-w-head-m--line-height: 28px;
+    --text-w-head-m--letter-spacing: -0.4px;
+    --text-w-label-l: 18px;
+    --text-w-label-m: 16px;
+    --text-w-label-m--line-height: 22px;
+    --text-w-label-s: 14px;
+    --text-w-label-s--line-height: 20px;
+    --text-w-body-l: 16px;
+    --text-w-body-l--line-height: 22px;
+    --text-w-body-m: 14px;
+    --text-w-body-m--line-height: 20px;
+    --text-w-caption: 12px;
+    --text-w-caption--line-height: 16px;
+  }
+}

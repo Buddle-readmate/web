@@ -1,4 +1,4 @@
-import { forwardRef, useId, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { useId, useState, type FormEvent, type KeyboardEvent, type Ref } from 'react'
 import type { RoomMember } from '@/types/room'
 
 const CONTENT_MAX = 500
@@ -16,6 +16,8 @@ type ThoughtInputProps = {
   target: ThoughtTarget
   onTargetChange: (target: ThoughtTarget) => void
   onSubmit: (content: string) => void
+  /** 답글 버튼을 눌렀을 때 입력칸으로 포커스를 옮기려고 받는 ref (React 19: 일반 prop) */
+  ref?: Ref<HTMLInputElement>
 }
 
 /** 입력 끝의 "@검색어" (없으면 null) */
@@ -26,10 +28,7 @@ const getMentionQuery = (text: string) => text.match(/@([^\s@]*)$/)?.[1] ?? null
  * - @를 치면 멤버 목록이 떠서 고르면 초록 @이름이 앞에 붙음 (지우기: 빈칸에서 Backspace)
  * - 답글 버튼을 누르면 그 사람 @이름이 붙은 채로 열림
  */
-const ThoughtInput = forwardRef<HTMLInputElement, ThoughtInputProps>(function ThoughtInput(
-  { members, target, onTargetChange, onSubmit },
-  inputRef,
-) {
+function ThoughtInput({ members, target, onTargetChange, onSubmit, ref }: ThoughtInputProps) {
   const listId = useId()
   const [text, setText] = useState('')
   const [activeIndex, setActiveIndex] = useState(0)
@@ -114,7 +113,8 @@ const ThoughtInput = forwardRef<HTMLInputElement, ThoughtInputProps>(function Th
         </ul>
       )}
 
-      <div className="flex items-center gap-2 rounded-3xl bg-surface-white py-2 pr-2 pl-5 shadow-strong">
+      {/* 입력칸에 키보드로 들어오면 입력창 전체에 초록 테두리 (outline-none 대신 보이는 포커스 표시) */}
+      <div className="flex items-center gap-2 rounded-3xl border-[1.5px] border-transparent bg-surface-white py-2 pr-2 pl-5 shadow-strong has-[input:focus-visible]:border-border-green">
         <label className="flex min-w-0 flex-1 items-center gap-1">
           <span className="sr-only">
             {target.mention ? `${target.mention.nickname}님에게 ` : ''}생각 남기기
@@ -125,7 +125,7 @@ const ThoughtInput = forwardRef<HTMLInputElement, ThoughtInputProps>(function Th
             </span>
           )}
           <input
-            ref={inputRef}
+            ref={ref}
             type="text"
             name="thought"
             autoComplete="off"
@@ -157,6 +157,6 @@ const ThoughtInput = forwardRef<HTMLInputElement, ThoughtInputProps>(function Th
       </div>
     </form>
   )
-})
+}
 
 export default ThoughtInput

@@ -50,6 +50,12 @@
   --color-text-secondary-brown: var(--color-brown-800);
   --color-text-weak-brown: var(--color-brown-500);
   --color-icon-weak: var(--color-gray-400);
+  --color-action-white: var(--color-gray-100);
+  --color-action-brown: var(--color-gray-300);
+  --color-action-brown-selected: var(--color-brown-700);
+  --color-surface-inverse: var(--color-gray-800);
+  /* 삭제·나가기 확인 버튼 배경 (피그마 surface/error, 팔레트에 없는 색) */
+  --color-surface-error: #ffeae1;
 
   /* 팔레트 (피그마 Design System > Color)
      Tailwind 기본 red/green/gray 색을 지워서, 피그마에 없는 단계(red-100 등)는 클래스가 안 생기게 함 */
@@ -114,6 +120,13 @@
   --shadow-modal: 0 24px 60px 0 rgb(51 51 46 / 0.18);
   --shadow-nav-m: 0 0 25px 0 rgb(45 56 18 / 0.2);
   --shadow-nav-w: 0 0 26.6px 0 rgb(125 122 115 / 0.17);
+  --shadow-strong: 0 0 20px 0 rgb(45 56 18 / 0.2);
+  /* 웹 독서 캘린더 카드 */
+  --shadow-card: 0 4px 20px 0 rgb(0 0 0 / 0.05);
+
+  /* 말풍선 그림자 (꼬리까지 같이 그려지도록 drop-shadow) */
+  --drop-shadow-bubble-m: 0 2px 6.05px rgb(0 0 0 / 0.06);
+  --drop-shadow-bubble-w: 0 0 7.5px rgb(45 56 18 / 0.04);
 
   /* 모바일 글자 (m-) */
   --text-m-head-l: 24px;

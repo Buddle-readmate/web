@@ -3,7 +3,7 @@ import icClose from '@/assets/icons/ic-close.svg'
 import icCoverCheck from '@/assets/icons/ic-cover-check.svg'
 import Button from '@/components/shared/Button'
 import type { ExchangeBook, NewReadingRecord } from '@/types/calendar'
-import { formatDateLabel } from '@/utils/calendar'
+import { formatDateLabel, getTodayKey } from '@/utils/calendar'
 
 const MEMO_MAX = 100
 
@@ -75,11 +75,12 @@ function RecordAddSheet({ dateKey, books, onSave, onClose }: RecordAddSheetProps
   const end = Number(endPage)
   // TODO: 잘못 입력했을 때 안내 문구·버튼 상태는 시안 나오면 추가 (지금은 저장만 막음)
   const canSave =
+    dateKey <= getTodayKey() &&
     Boolean(book) &&
     startPage !== '' &&
     endPage !== '' &&
     start >= 1 &&
-    end > start &&
+    end >= start &&
     (!book || end <= book.totalPages)
 
   const handleSave = () => {

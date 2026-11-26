@@ -41,7 +41,11 @@ function ExchangeSection({ rooms, className = '' }: ExchangeSectionProps) {
           {/* 모바일: 가로 스크롤, 화면 끝까지 보이도록 좌우 여백만큼 확장 */}
           <ul className="-mx-6 flex gap-3 overflow-x-auto px-6 [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden">
             {rooms.map((room) => (
-              <li key={room.id} className={rooms.length === 1 ? 'w-full' : 'w-[330px] shrink-0'}>
+              // 시안: 2개 이상이면 카드 폭 = 화면 폭 − 60 (390 → 330)
+              <li
+                key={room.id}
+                className={rooms.length === 1 ? 'w-full' : 'w-[calc(100vw-60px)] shrink-0'}
+              >
                 <ExchangeCard room={room} className="w-full" />
               </li>
             ))}

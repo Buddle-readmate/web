@@ -3,22 +3,27 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import HomeHeader from '@/components/home/HomeHeader'
 import CharacterAvatar from '@/components/my/CharacterAvatar'
 import MobileStats from '@/components/my/MobileStats'
-import { getMyStats } from '@/components/my/myStats'
+import { applyAddedRecords, getMyStats } from '@/components/my/myStats'
 import ProfileEditSheet from '@/components/my/ProfileEditSheet'
 import SettingsList from '@/components/my/SettingsList'
 import WebStatsCard from '@/components/my/WebStatsCard'
 import YearSelectButton from '@/components/my/YearSelectButton'
 import YearSelectSheet from '@/components/my/YearSelectSheet'
 import { useOverlayParam } from '@/hooks/useOverlayParam'
+import { EXCHANGE_BOOKS_MOCK } from '@/mocks/calendar'
 import { MY_PAGE_MOCK, MY_PAGE_MOCK_EMPTY } from '@/mocks/my'
+import { useReadingRecordStore } from '@/stores/readingRecordStore'
 
 function MyPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   // TODO: 마이페이지 API 연동 전까지 더미 데이터 (개발 중 /my?mock=empty 로 빈 상태 확인)
-  const [data, setData] = useState(() =>
+  const [baseData, setBaseData] = useState(() =>
     import.meta.env.DEV && searchParams.get('mock') === 'empty' ? MY_PAGE_MOCK_EMPTY : MY_PAGE_MOCK,
   )
+  // 캘린더에서 추가한 기록까지 통계에 반영
+  const addedRecords = useReadingRecordStore((state) => state.addedRecords)
+  const data = applyAddedRecords(baseData, addedRecords, EXCHANGE_BOOKS_MOCK)
   // TODO: 연도별 통계 API 연동 (지금은 연도별 더미 데이터)
   const [year, setYear] = useState(data.years[0].year)
   // 프로필 편집·연도 선택은 ?sheet= 로 띄움 (뒤로가기로 닫힘)
@@ -113,7 +118,7 @@ function MyPage() {
           finishedThisYear={thisYearData.stats.finished}
           onSave={(profile) => {
             // TODO: 프로필 저장 API 연동
-            setData((prev) => ({ ...prev, ...profile }))
+            setBaseData((prev) => ({ ...prev, ...profile }))
             sheet.close()
           }}
           onClose={sheet.close}

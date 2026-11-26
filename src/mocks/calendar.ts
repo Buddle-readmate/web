@@ -81,7 +81,7 @@ function createMockRecords(): ReadingRecord[] {
           date: toDateKey(year, month, day),
           book: BOOKS[key],
           startPage,
-          endPage: startPage + PAGES_PER_DAY,
+          endPage: startPage + PAGES_PER_DAY - 1,
           memo: MEMOS[key],
         })
       }

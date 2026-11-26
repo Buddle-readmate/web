@@ -29,7 +29,8 @@ function FriendsPopover({ room, isHost, onRemove, onClose, triggerRef }: Friends
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target as Element
       if (rootRef.current?.contains(target) || triggerRef.current?.contains(target)) return
-      if (target.closest('[role="dialog"]')) return
+      // 위에 확인 창이 떠 있으면 (창 안·어두운 바깥 모두) 친구 목록은 그대로 둠
+      if (document.querySelector('[role="dialog"]')) return
       onCloseRef.current()
     }
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -60,7 +61,18 @@ function FriendsPopover({ room, isHost, onRemove, onClose, triggerRef }: Friends
         </button>
       </div>
       <div className="flex flex-col gap-2">
-        <InviteCodeBox roomName={room.name} inviteCode={room.inviteCode} password={room.password} />
+        {/* 최대 인원이면 초대코드 대신 안내 (모바일 초대하기와 같게) */}
+        {room.members.length >= MAX_ROOM_MEMBERS ? (
+          <p className="rounded-2xl bg-surface-gray-light px-5 py-3 text-w-body-m font-medium text-text-weak">
+            인원이 가득 찼어요 (최대 {MAX_ROOM_MEMBERS}명)
+          </p>
+        ) : (
+          <InviteCodeBox
+            roomName={room.name}
+            inviteCode={room.inviteCode}
+            password={room.password}
+          />
+        )}
         <MemberList
           members={room.members}
           hostId={room.hostId}

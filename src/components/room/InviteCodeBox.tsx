@@ -13,13 +13,15 @@ type CopyState = 'idle' | 'copied' | 'failed'
 /** 초대코드 + 비밀번호 + 복사하기 (방 만들기 완료 · 친구 초대) */
 function InviteCodeBox({ roomName, inviteCode, password }: InviteCodeBoxProps) {
   const [copyState, setCopyState] = useState<CopyState>('idle')
+  // 연달아 눌러도 마지막으로 누른 때부터 2초 동안 보이도록 누른 횟수로 타이머를 새로 시작
+  const [copyCount, setCopyCount] = useState(0)
 
   // 복사 결과 문구는 잠깐 보여주고 원래대로
   useEffect(() => {
     if (copyState === 'idle') return
     const timer = window.setTimeout(() => setCopyState('idle'), 2000)
     return () => window.clearTimeout(timer)
-  }, [copyState])
+  }, [copyState, copyCount])
 
   const copy = async () => {
     try {
@@ -30,6 +32,7 @@ function InviteCodeBox({ roomName, inviteCode, password }: InviteCodeBoxProps) {
     } catch {
       setCopyState('failed')
     }
+    setCopyCount((count) => count + 1)
   }
 
   return (

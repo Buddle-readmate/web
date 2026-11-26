@@ -1,5 +1,5 @@
 import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import icBack from '@/assets/icons/ic-back.svg'
 import icMembers from '@/assets/icons/ic-members.svg'
 import icPlus from '@/assets/icons/ic-plus.svg'
@@ -49,6 +49,9 @@ function RoomDetailPage() {
   const removedIds = useRoomEditStore((state) => state.removedMembers[Number(roomId)])
   const isClosed = useRoomEditStore((state) => state.closedRoomIds.includes(Number(roomId)))
   const room = baseRoom && !isClosed ? applyRoomEdit(baseRoom, edit, removedIds) : undefined
+
+  // 삭제했거나 나간 방 (뒤로가기로 다시 온 경우 포함) → 목록으로
+  if (baseRoom && isClosed) return <Navigate to="/rooms" replace />
 
   if (!room) {
     return (
@@ -106,10 +109,19 @@ function RoomDetailView({ room }: RoomDetailViewProps) {
   const [revealedIds, setRevealedIds] = useState<Set<number>>(() => new Set())
   // 웹: 왼쪽에서 고른 구간 / 모바일: 펼친 구간들 (처음엔 지금 읽는 구간)
   // 'all': 맨 위 ALL → 모든 구간의 이야기를 한 번에 (구간이 없는 방도 ALL)
-  const [selectedStart, setSelectedStart] = useState<number | 'all'>(currentRange?.start ?? 'all')
-  const [openStarts, setOpenStarts] = useState<Set<number>>(
+  const [selectedStartState, setSelectedStart] = useState<number | 'all'>(
+    currentRange?.start ?? 'all',
+  )
+  const [openStartsState, setOpenStarts] = useState<Set<number>>(
     () => new Set(currentRange ? [currentRange.start] : []),
   )
+  // 설정에서 총 쪽수를 바꿔 구간이 새로 나뉘면, 없어진 구간 대신 ALL / 지금 읽는 구간으로
+  const rangeStarts = new Set(room.pageRanges.map((range) => range.start))
+  const selectedStart =
+    selectedStartState === 'all' || rangeStarts.has(selectedStartState) ? selectedStartState : 'all'
+  const openStarts = [...openStartsState].some((start) => rangeStarts.has(start))
+    ? openStartsState
+    : new Set(currentRange ? [currentRange.start] : [])
   const [statusMessage, setStatusMessage] = useState('')
   const tabRefs = useRef<Record<'stories' | 'members', HTMLButtonElement | null>>({
     stories: null,

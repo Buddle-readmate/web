@@ -66,9 +66,12 @@ function RoomSettingsPanel({
   )
   const [isBookDialogOpen, setIsBookDialogOpen] = useState(false)
   const [confirm, setConfirm] = useState<Confirm>(null)
+  // 지금 책의 원래 쪽수 (총 쪽수를 직접 고쳤는지 판단용, 바로 저장돼도 바뀌지 않음)
+  const [bookPages, setBookPages] = useState(String(room.totalPages))
 
   const myPage = room.members.find((member) => member.id === room.myId)?.readPage ?? 0
-  const myPercent = room.totalPages > 0 ? Math.round((myPage / room.totalPages) * 100) : 0
+  const myPercent =
+    room.totalPages > 0 ? Math.min(100, Math.round((myPage / room.totalPages) * 100)) : 0
   const currentBook: ShelfBook = {
     id: -1,
     title: room.bookTitle,
@@ -95,14 +98,18 @@ function RoomSettingsPanel({
     const result = validateRoomInfo(values.name, values.pages, values.goalPreset, values.customGoal)
     const edit: RoomInfoEdit = {}
     if (result.isNameValid) edit.name = values.name.trim()
-    if (result.isPagesValid) edit.totalPages = result.totalPages
-    if (result.isGoalValid) edit.dailyGoal = result.dailyGoal
+    // 총 쪽수와 하루 목표는 함께 맞을 때만 같이 저장 (목표가 쪽수보다 큰 상태로 저장되지 않게)
+    if (result.isPagesValid && result.isGoalValid) {
+      edit.totalPages = result.totalPages
+      edit.dailyGoal = result.dailyGoal
+    }
     onSave(edit)
   }
 
   const changeBook = (book: ShelfBook) => {
     // 총 쪽수가 이전 책 쪽수 그대로면 새 책 쪽수로 바꾸기 (직접 고친 값은 유지)
-    const nextPages = pages === String(room.totalPages) ? String(book.totalPages) : pages
+    const nextPages = pages === bookPages ? String(book.totalPages) : pages
+    setBookPages(String(book.totalPages))
     setPages(nextPages)
     onSave({ book: { title: book.title, author: book.author, coverUrl: book.coverUrl } })
     save({ pages: nextPages })

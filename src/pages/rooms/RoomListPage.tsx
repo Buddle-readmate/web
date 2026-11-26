@@ -126,7 +126,10 @@ function RoomListPage() {
       )}
       {modal.value === 'join' && (
         <RoomJoinFlow
-          rooms={[...createdRooms.map(toJoinableRoom), ...JOINABLE_ROOMS_MOCK]}
+          // 삭제했거나 나간 방은 초대코드로도 못 들어가게
+          rooms={[...createdRooms.map(toJoinableRoom), ...JOINABLE_ROOMS_MOCK].filter(
+            (room) => !closedRoomIds.includes(room.roomId),
+          )}
           onClose={modal.close}
         />
       )}

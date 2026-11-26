@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import calendarChakjjaki from '@/assets/characters/calendar-chakjjaki-draft.png'
 import HomeHeader from '@/components/home/HomeHeader'
 import DayRecordPanel from '@/components/record/DayRecordPanel'
 import MonthSummary from '@/components/record/MonthSummary'
@@ -85,8 +86,10 @@ function CalendarPage() {
 
           <MonthSummary month={month} days={monthDays} pages={monthPages} className="lg:hidden" />
 
-          {/* 모바일: 달력 → 기록 / 웹: 달력 + 오른쪽 기록 패널 320px */}
-          <div className="flex flex-col gap-6 lg:flex-row">
+          {/* 모바일: 달력 → 기록
+              웹(아이패드 가로 포함): 기록 패널 · 달력 · 책짹이를 시안(1440px) 폭 339:684:193 비율로 나눠
+              화면이 좁아져도 같은 구성으로 보이게 함 */}
+          <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[339fr_684fr_193fr] lg:gap-3">
             <ReadingCalendar
               year={year}
               month={month}
@@ -97,7 +100,7 @@ function CalendarPage() {
               onPrevMonth={() => moveMonth(-1)}
               onNextMonth={() => moveMonth(1)}
               onToday={goToday}
-              className="lg:min-w-0 lg:flex-1"
+              className="lg:min-w-0"
             />
             <DayRecordPanel
               dateKey={selectedKey}
@@ -107,7 +110,15 @@ function CalendarPage() {
                 if (selectedKey > todayKey) showFutureToast()
                 else sheet.open('add-record')
               }}
-              className="lg:w-[320px] lg:shrink-0"
+              className="lg:order-first lg:min-w-0"
+            />
+            {/* TODO: 책짹이 그래픽은 예비 디자인 (피그마 "독서 캘린더(예진ver)") → 최종 디자인 나오면 이미지 교체 */}
+            <img
+              src={calendarChakjjaki}
+              alt=""
+              width={193}
+              height={350}
+              className="hidden h-auto w-full self-end lg:block"
             />
           </div>
         </main>

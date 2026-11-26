@@ -23,25 +23,25 @@ function RecordItem({ record }: { record: ReadingRecord }) {
         <span className="h-12 w-[34px] shrink-0 rounded bg-surface-brown lg:h-[50px] lg:w-9" />
       )}
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <p className="truncate text-m-label-s text-text-default lg:text-w-label-s">
+        {/* 아이패드 가로처럼 패널이 좁아지면 제목이 잘리지 않고 쪽수 배지가 아랫줄로 */}
+        <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
+          <p className="min-w-0 text-m-label-s break-keep [overflow-wrap:anywhere] text-text-default lg:text-w-label-s">
             {record.book.title}
           </p>
           <span className="shrink-0 rounded-full bg-surface-brown px-2 py-0.5 text-m-caption text-text-secondary-brown">
             {record.startPage}–{record.endPage}p
           </span>
         </div>
+        {/* 웹 시안은 책 제목 + 쪽수만 (메모는 모바일에서만) */}
         {record.memo && (
-          <p className="truncate text-m-caption text-text-secondary lg:text-caption lg:font-normal">
-            {record.memo}
-          </p>
+          <p className="truncate text-m-caption text-text-secondary lg:hidden">{record.memo}</p>
         )}
       </div>
     </li>
   )
 }
 
-/** 선택한 날짜의 독서 기록 (모바일: 달력 아래 / 웹: 달력 오른쪽 320px) */
+/** 선택한 날짜의 독서 기록 (모바일: 달력 아래 / 웹: 달력 왼쪽 339px 베이지 패널) */
 function DayRecordPanel({ dateKey, records, isToday, onAdd, className = '' }: DayRecordPanelProps) {
   const totalPages = records.reduce((sum, record) => sum + getRecordPages(record), 0)
   const bookCount = new Set(records.map((record) => record.book.id)).size
@@ -53,13 +53,17 @@ function DayRecordPanel({ dateKey, records, isToday, onAdd, className = '' }: Da
   return (
     <section
       aria-labelledby="day-record-title"
-      className={`flex flex-col gap-3 rounded-3xl bg-surface-gray-light p-5 lg:rounded-2xl lg:px-5 lg:py-6 ${className}`}
+      className={`flex flex-col gap-3 rounded-3xl bg-surface-gray-light p-5 lg:rounded-2xl lg:bg-surface-brown lg:px-5 lg:py-6 ${className}`}
     >
       <div className="flex flex-col gap-0.5">
         <h3 id="day-record-title" className="text-m-label-l text-text-default lg:text-w-label-l">
           {formatDateLabel(dateKey)}
         </h3>
-        <p className="text-m-caption text-text-weak lg:text-w-caption">{summary}</p>
+        <p className="text-m-caption text-text-weak lg:hidden">{summary}</p>
+        {/* 웹 시안 문구 (기록이 없으면 기존 안내 그대로) */}
+        <p className="hidden text-w-caption text-text-secondary-brown lg:block">
+          {records.length > 0 ? '이날의 독서 기록이에요' : summary}
+        </p>
       </div>
 
       {records.length > 0 ? (

@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from 'react'
-import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import icBack from '@/assets/icons/ic-back.svg'
 import icMembers from '@/assets/icons/ic-members.svg'
 import icPlus from '@/assets/icons/ic-plus.svg'
@@ -15,6 +15,7 @@ import GroupIcon from '@/components/shared/GroupIcon'
 import MaskIcon from '@/components/shared/MaskIcon'
 import { useOverlayParam } from '@/hooks/useOverlayParam'
 import { getRoomDetailMock } from '@/mocks/rooms'
+import { useRoomStoryStore } from '@/stores/roomStoryStore'
 import type { PageRange, RoomDetail, RoomMember, Story } from '@/types/room'
 import {
   findCurrentRange,
@@ -57,7 +58,6 @@ type RoomDetailViewProps = {
 
 function RoomDetailView({ room }: RoomDetailViewProps) {
   const navigate = useNavigate()
-  const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   // 이야기 생성은 ?sheet=story 로 띄움 (뒤로가기로 닫힘)
   const sheet = useOverlayParam('sheet')
@@ -66,20 +66,24 @@ function RoomDetailView({ room }: RoomDetailViewProps) {
   const myPage = room.members.find((member) => member.id === room.myId)?.readPage ?? 0
   const currentRange = findCurrentRange(room.pageRanges, myPage)
 
-  // TODO: 이야기 등록 API 연동 (지금은 화면에만 추가)
-  const [stories, setStories] = useState(room.stories)
+  // TODO: 이야기 등록 API 연동 (지금은 더미 데이터 + 이번 접속에서 등록한 이야기)
+  const addedStories = useRoomStoryStore((state) => state.addedStories[room.id])
+  const saveStory = useRoomStoryStore((state) => state.addStory)
+  const stories = addedStories ? [...room.stories, ...addedStories] : room.stories
   const [showUnread, setShowUnread] = useState(true)
   const [sort, setSort] = useState<SortOrder>('desc')
   const [revealedIds, setRevealedIds] = useState<Set<number>>(() => new Set())
   // 웹: 왼쪽에서 고른 구간 / 모바일: 펼친 구간들 (처음엔 지금 읽는 구간)
-  // 'all': 맨 위 ALL → 모든 구간의 이야기를 한 번에
-  const [selectedStart, setSelectedStart] = useState<number | 'all' | undefined>(
-    currentRange?.start,
-  )
+  // 'all': 맨 위 ALL → 모든 구간의 이야기를 한 번에 (구간이 없는 방도 ALL)
+  const [selectedStart, setSelectedStart] = useState<number | 'all'>(currentRange?.start ?? 'all')
   const [openStarts, setOpenStarts] = useState<Set<number>>(
     () => new Set(currentRange ? [currentRange.start] : []),
   )
   const [statusMessage, setStatusMessage] = useState('')
+  const tabRefs = useRef<Record<'stories' | 'members', HTMLButtonElement | null>>({
+    stories: null,
+    members: null,
+  })
 
   const membersById = new Map(room.members.map((member) => [member.id, member]))
   const isUnread = (story: Story) => story.authorId !== room.myId && story.page > myPage
@@ -92,12 +96,15 @@ function RoomDetailView({ room }: RoomDetailViewProps) {
   const hasStories = stories.length > 0
 
   const goBack = () => {
-    // 주소로 바로 들어와 이전 기록이 없으면 목록으로
-    if (location.key === 'default') navigate('/rooms')
-    else navigate(-1)
+    // 주소로 바로 들어와 앱 안 이전 기록이 없으면 목록으로
+    // (탭·구간 변경은 replace라 location.key로는 판단 못 해서 router 기록 순번(idx)으로 확인)
+    const historyIndex = (window.history.state as { idx?: number } | null)?.idx ?? 0
+    if (historyIndex > 0) navigate(-1)
+    else navigate('/rooms')
   }
 
   const changeTab = (next: 'stories' | 'members') => {
+    if (next === tab) return
     const params = new URLSearchParams(searchParams)
     if (next === 'members') params.set('tab', 'members')
     else params.delete('tab')
@@ -118,25 +125,33 @@ function RoomDetailView({ room }: RoomDetailViewProps) {
   }
 
   const addStory = ({ page, content }: { page: number; content: string }) => {
-    setStories((prev) => [
-      ...prev,
-      {
-        id: Math.max(0, ...prev.map((story) => story.id)) + 1,
-        page,
-        content,
-        authorId: room.myId,
-        replierIds: [],
-        myRepliedAt: formatToday(),
-      },
-    ])
-    // 방금 쓴 이야기가 보이도록 해당 구간 열기
+    saveStory(room.id, {
+      id: Math.max(0, ...stories.map((story) => story.id)) + 1,
+      page,
+      content,
+      authorId: room.myId,
+      replierIds: [],
+      myRepliedAt: formatToday(),
+    })
+    // 방금 쓴 이야기가 보이도록 해당 구간 열기 (ALL을 보고 있으면 그대로)
     const range = room.pageRanges.find((item) => isInRange(page, item))
     if (range) {
-      setSelectedStart(range.start)
+      if (selectedStart !== 'all') setSelectedStart(range.start)
       setOpenStarts((prev) => new Set(prev).add(range.start))
     }
-    setStatusMessage(`P. ${page} 이야기를 등록했어요`)
+    // 같은 문구가 연달아 와도 스크린리더가 다시 읽도록 비웠다가 채우기
+    setStatusMessage('')
+    window.setTimeout(() => setStatusMessage(`P. ${page} 이야기를 등록했어요`), 100)
     sheet.close()
+  }
+
+  // 탭: 좌우 방향키로 이동 (탭이 2개라 서로 바꾸기)
+  const handleTabKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
+    event.preventDefault()
+    const next = tab === 'stories' ? 'members' : 'stories'
+    changeTab(next)
+    tabRefs.current[next]?.focus()
   }
 
   const renderBubble = (story: Story) => (
@@ -212,7 +227,12 @@ function RoomDetailView({ room }: RoomDetailViewProps) {
           <RoomBookInfo room={room} />
 
           <div className="flex flex-col gap-4">
-            <div role="tablist" aria-label="교환독서방 메뉴" className="flex">
+            <div
+              role="tablist"
+              aria-label="교환독서방 메뉴"
+              onKeyDown={handleTabKeyDown}
+              className="flex"
+            >
               {(
                 [
                   ['stories', '이야기'],
@@ -223,8 +243,12 @@ function RoomDetailView({ room }: RoomDetailViewProps) {
                 return (
                   <button
                     key={value}
+                    ref={(element) => {
+                      tabRefs.current[value] = element
+                    }}
                     type="button"
                     role="tab"
+                    tabIndex={isSelected ? 0 : -1}
                     id={`room-tab-${value}`}
                     aria-selected={isSelected}
                     aria-controls={`room-panel-${value}`}
@@ -237,10 +261,21 @@ function RoomDetailView({ room }: RoomDetailViewProps) {
               })}
             </div>
 
-            <div role="tabpanel" id={`room-panel-${tab}`} aria-labelledby={`room-tab-${tab}`}>
-              {tab === 'members' ? (
-                membersPlaceholder
-              ) : !hasStories ? (
+            <div
+              role="tabpanel"
+              id="room-panel-members"
+              aria-labelledby="room-tab-members"
+              hidden={tab !== 'members'}
+            >
+              {membersPlaceholder}
+            </div>
+            <div
+              role="tabpanel"
+              id="room-panel-stories"
+              aria-labelledby="room-tab-stories"
+              hidden={tab !== 'stories'}
+            >
+              {!hasStories ? (
                 <RoomEmptyState
                   title="페이지별 이야기"
                   description="책 속 장면에 대해 이야기할 수 있어요"

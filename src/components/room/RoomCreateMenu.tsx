@@ -32,7 +32,14 @@ function RoomCreateMenu() {
   }, [isOpen])
 
   return (
-    <div ref={rootRef} className="relative">
+    <div
+      ref={rootRef}
+      // Tab으로 메뉴 밖으로 포커스가 나가면 닫기
+      onBlur={(event) => {
+        if (!rootRef.current?.contains(event.relatedTarget as Node | null)) setIsOpen(false)
+      }}
+      className="relative"
+    >
       <button
         ref={buttonRef}
         type="button"

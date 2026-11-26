@@ -1,4 +1,7 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react'
+
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
 type RoomFlowModalProps = {
   /** 대화상자 이름이 되는 제목 요소의 id */
@@ -21,6 +24,7 @@ type RoomFlowModalProps = {
 function RoomFlowModal({ labelledBy, onClose, mobileVariant, children }: RoomFlowModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const onCloseRef = useRef(onClose)
+  const pressedOutsideRef = useRef(false)
 
   useEffect(() => {
     onCloseRef.current = onClose
@@ -33,7 +37,8 @@ function RoomFlowModal({ labelledBy, onClose, mobileVariant, children }: RoomFlo
     const previousFocus = document.activeElement as HTMLElement | null
     dialogRef.current?.focus()
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onCloseRef.current()
+      // 안쪽 입력칸이 ESC를 먼저 쓴 경우(검색어 지우기 등)는 닫지 않음
+      if (event.key === 'Escape' && !event.defaultPrevented) onCloseRef.current()
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => {
@@ -43,18 +48,43 @@ function RoomFlowModal({ labelledBy, onClose, mobileVariant, children }: RoomFlo
     }
   }, [])
 
+  // Tab 포커스가 창 밖(뒤 목록)으로 빠지지 않게 처음·끝에서 돌리기
+  const trapFocus = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'Tab' || !dialogRef.current) return
+    const focusables = [...dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
+      (element) => element.offsetParent !== null,
+    )
+    if (focusables.length === 0) return
+    const first = focusables[0]
+    const last = focusables[focusables.length - 1]
+    const active = document.activeElement
+    if (event.shiftKey && (active === first || active === dialogRef.current)) {
+      event.preventDefault()
+      last.focus()
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault()
+      first.focus()
+    }
+  }
+
   const isFullscreen = mobileVariant === 'fullscreen'
 
   return (
     <div
       className={`fixed inset-0 z-50 flex lg:items-center lg:justify-center lg:bg-dim lg:p-6 ${isFullscreen ? 'bg-surface-page' : 'items-center justify-center bg-dim px-6'}`}
       // 모바일 전체 화면은 바깥 영역이 없어서 웹·카드일 때만 바깥 클릭으로 닫힘
+      // 누른 곳과 뗀 곳이 모두 바깥일 때만 닫기 (창 안에서 글자 드래그하다 밖에서 떼도 안 닫히게)
+      onPointerDown={(event) => {
+        pressedOutsideRef.current = event.target === event.currentTarget
+      }}
       onClick={(event) => {
-        if (event.target === event.currentTarget) onClose()
+        if (pressedOutsideRef.current && event.target === event.currentTarget) onClose()
+        pressedOutsideRef.current = false
       }}
     >
       <div
         ref={dialogRef}
+        onKeyDown={trapFocus}
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelledBy}

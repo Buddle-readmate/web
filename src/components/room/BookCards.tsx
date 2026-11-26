@@ -28,7 +28,8 @@ function MetaLine({ items }: { items: string[] }) {
   return (
     <p className="flex min-w-0 items-center gap-1 text-m-caption text-text-secondary lg:text-w-caption">
       {items.map((item, index) => (
-        <span key={item} className="flex min-w-0 items-center gap-1">
+        // 제목과 저자가 같은 책도 있어서 순서로 구분
+        <span key={index} className="flex min-w-0 items-center gap-1">
           {index > 0 && <span aria-hidden className="h-3 w-px shrink-0 bg-text-secondary" />}
           <span className="truncate">{item}</span>
         </span>

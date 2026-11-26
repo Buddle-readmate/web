@@ -82,8 +82,11 @@ function RoomCreateFlow({ shelfBooks, onClose }: RoomCreateFlowProps) {
 
   // TODO: 책 검색 API 나오면 전체 책 검색으로 교체 (지금은 내 책장 안에서만 찾기)
   const trimmedQuery = query.trim()
+  // 고른 책은 검색어와 안 맞아도 계속 보여줌 (안 보이는 책으로 다음 단계에 가지 않게)
   const visibleBooks = trimmedQuery
-    ? shelfBooks.filter((item) => `${item.title} ${item.author}`.includes(trimmedQuery))
+    ? shelfBooks.filter(
+        (item) => item.id === book?.id || `${item.title} ${item.author}`.includes(trimmedQuery),
+      )
     : shelfBooks
 
   const goNext = (event?: FormEvent) => {
@@ -229,6 +232,15 @@ function RoomCreateFlow({ shelfBooks, onClose }: RoomCreateFlowProps) {
                   autoComplete="off"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
+                  onKeyDown={(event) => {
+                    // Enter: 바로 걸러지므로 다음 단계로 넘어가지 않게
+                    if (event.key === 'Enter') event.preventDefault()
+                    // ESC: 검색어만 지우고 창은 닫지 않게 (창은 검색어가 없을 때 ESC로 닫힘)
+                    if (event.key === 'Escape' && query) {
+                      event.preventDefault()
+                      setQuery('')
+                    }
+                  }}
                   placeholder="함께 읽을 책을 검색하세요"
                   className="min-w-0 flex-1 bg-transparent text-m-body-l font-medium text-text-default outline-none placeholder:text-text-weak lg:text-w-body-l lg:font-medium"
                 />
@@ -263,9 +275,12 @@ function RoomCreateFlow({ shelfBooks, onClose }: RoomCreateFlowProps) {
                         book={item}
                         isSelected={book?.id === item.id}
                         onSelect={() => {
+                          // 총 쪽수가 비었거나 이전 책 쪽수 그대로면 새 책 쪽수로 채우기
+                          // (직접 고친 값은 유지, 판본이 다르면 고쳐 쓰면 됨)
+                          if (!pages || pages === String(book?.totalPages)) {
+                            setPages(String(item.totalPages))
+                          }
                           setBook(item)
-                          // 총 쪽수를 아직 안 적었으면 책 쪽수로 채워두기 (판본이 다르면 고치면 됨)
-                          if (!pages) setPages(String(item.totalPages))
                         }}
                       />
                     ))}

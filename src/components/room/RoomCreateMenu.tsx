@@ -35,6 +35,13 @@ function RoomCreateMenu({ onCreate, onJoin }: RoomCreateMenuProps) {
     }
   }, [isOpen])
 
+  // 메뉴를 닫기 전에 + 버튼으로 포커스를 돌려둠 → 띄운 창을 닫으면 + 버튼으로 돌아옴
+  const choose = (action: () => void) => {
+    buttonRef.current?.focus()
+    setIsOpen(false)
+    action()
+  }
+
   return (
     <div
       ref={rootRef}
@@ -65,8 +72,7 @@ function RoomCreateMenu({ onCreate, onJoin }: RoomCreateMenuProps) {
             <button
               type="button"
               onClick={() => {
-                setIsOpen(false)
-                onCreate()
+                choose(onCreate)
               }}
               className="flex w-full items-center gap-2 py-3 text-m-label-m text-text-secondary"
             >
@@ -78,8 +84,7 @@ function RoomCreateMenu({ onCreate, onJoin }: RoomCreateMenuProps) {
             <button
               type="button"
               onClick={() => {
-                setIsOpen(false)
-                onJoin()
+                choose(onJoin)
               }}
               className="flex w-full items-center gap-2 py-3 text-m-label-m text-text-secondary"
             >

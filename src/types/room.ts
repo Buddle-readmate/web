@@ -96,3 +96,18 @@ export type NewRoomInput = {
   dailyGoal: number
   password: string
 }
+
+/** 페이지별 이야기에 남긴 생각 (답글이면 parentId) */
+export type Thought = {
+  id: number
+  authorId: number
+  content: string
+  /** 표시용 "26.11.14" */
+  createdAt: string
+  /** 좋아요 누른 멤버 */
+  likedBy: number[]
+  /** 답글이면 원래 생각 id */
+  parentId?: number
+  /** @멘션한 멤버 */
+  mentionId?: number
+}

@@ -3,7 +3,7 @@ import contradiction from '@/assets/mocks/covers/contradiction.jpg'
 import convenienceStore from '@/assets/mocks/covers/convenience-store.jpg'
 import demian from '@/assets/mocks/covers/demian.jpg'
 import humanActs from '@/assets/mocks/covers/human-acts.jpg'
-import type { JoinableRoom, RoomDetail, RoomSummary, ShelfBook } from '@/types/room'
+import type { JoinableRoom, RoomDetail, RoomSummary, ShelfBook, Thought } from '@/types/room'
 import { toPageRanges } from '@/utils/room'
 
 // TODO: 교환독서 API 나오면 교체 (피그마 "교환독서_메인" / "교환독서방" 시안 기준 더미 데이터)
@@ -73,12 +73,12 @@ const DEMIAN_ROOM: RoomDetail = {
   password: '1234',
   dailyGoal: 20,
   members: [
-    { id: 1, nickname: '김버들', readPage: 268 },
-    { id: 2, nickname: '홍길동', readPage: 320 },
+    { id: 1, nickname: '장원', readPage: 268 },
+    { id: 2, nickname: '동진', readPage: 320 },
     { id: 3, nickname: '예진', readPage: 120 },
     { id: 4, nickname: '효정', readPage: 90 },
-    { id: 5, nickname: '민지', readPage: 30 },
-    { id: 6, nickname: '지수', readPage: 200 },
+    { id: 5, nickname: '정원', readPage: 30 },
+    { id: 6, nickname: '지원', readPage: 200 },
   ],
   pageRanges: [
     { start: 1, end: 50 },
@@ -257,3 +257,71 @@ export const JOINABLE_ROOMS_MOCK: JoinableRoom[] = [
     maxMembers: 6,
   },
 ]
+
+/** 페이지별 이야기에 달린 생각 (피그마 "페이지별 이야기" 시안 기준, 데미안 방만) */
+const THOUGHTS_MOCK: Record<number, Thought[]> = {
+  // P. 267 홍길동 질문 (아직 내 생각 안 남김 → 가려서 보여줌)
+  3: [
+    {
+      id: 1,
+      authorId: 3,
+      content:
+        '나는 오히려 그 선택이 가장 용감한 순간이라고 생각했어. 익숙한 세계를 깨고 나오는 느낌이었거든.',
+      createdAt: '26.11.14',
+      likedBy: [2, 4],
+    },
+    {
+      id: 2,
+      authorId: 2,
+      content: '나도 비슷하게 읽었어. 그 장면에서 한참 멈춰 있었어',
+      createdAt: '26.11.14',
+      likedBy: [3, 4],
+      parentId: 1,
+      mentionId: 3,
+    },
+    {
+      id: 3,
+      authorId: 4,
+      content: '두려움보다 궁금함이 더 컸던 것 같아. 다음 장이 계속 궁금했어.',
+      createdAt: '26.11.15',
+      likedBy: [2],
+    },
+    {
+      id: 4,
+      authorId: 6,
+      content: '처음엔 이해가 안 됐는데 두 번 읽으니까 조금 알 것 같아.',
+      createdAt: '26.11.16',
+      likedBy: [],
+    },
+  ],
+  // P. 267 내 질문 (내가 쓴 이야기라 바로 보임)
+  2: [
+    {
+      id: 1,
+      authorId: 3,
+      content: '알을 깨는 이야기, 나도 요즘 딱 그런 시기라서 공감됐어.',
+      createdAt: '26.10.27',
+      likedBy: [1],
+    },
+    {
+      id: 2,
+      authorId: 1,
+      content: '맞아, 그래서 더 오래 남았던 것 같아',
+      createdAt: '26.10.27',
+      likedBy: [3],
+      parentId: 1,
+      mentionId: 3,
+    },
+    {
+      id: 3,
+      authorId: 2,
+      content: '편지를 받는 장면보다 그 뒤에 혼자 걷는 장면이 더 기억에 남아.',
+      createdAt: '26.10.28',
+      likedBy: [],
+    },
+  ],
+}
+
+export function getThoughtsMock(roomId: number, storyId: number): Thought[] {
+  return roomId === DEMIAN_ROOM.id ? (THOUGHTS_MOCK[storyId] ?? []) : []
+}

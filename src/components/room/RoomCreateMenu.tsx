@@ -1,12 +1,16 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
 import icLock from '@/assets/icons/ic-lock.svg'
 import icPlus from '@/assets/icons/ic-plus.svg'
 import GroupIcon from '@/components/shared/GroupIcon'
 import MaskIcon from '@/components/shared/MaskIcon'
 
+type RoomCreateMenuProps = {
+  onCreate: () => void
+  onJoin: () => void
+}
+
 /** 모바일 헤더 + 버튼 → 방 만들기 / 코드로 참여하기 메뉴 */
-function RoomCreateMenu() {
+function RoomCreateMenu({ onCreate, onJoin }: RoomCreateMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const menuId = useId()
   const rootRef = useRef<HTMLDivElement>(null)
@@ -58,18 +62,26 @@ function RoomCreateMenu() {
           className="absolute top-[calc(100%+20px)] right-0 z-30 flex w-[194px] flex-col rounded-2xl border border-border-strong bg-surface-white px-3 py-1 shadow-strong"
         >
           <li>
-            <Link
-              to="/rooms/new"
-              className="flex items-center gap-2 py-3 text-m-label-m text-text-secondary"
+            <button
+              type="button"
+              onClick={() => {
+                setIsOpen(false)
+                onCreate()
+              }}
+              className="flex w-full items-center gap-2 py-3 text-m-label-m text-text-secondary"
             >
               <MaskIcon src={icPlus} className="size-5 bg-icon-weak" />방 만들기
-            </Link>
+            </button>
           </li>
           <li aria-hidden className="h-[1.5px] bg-border-default" />
           <li>
-            <Link
-              to="/rooms/join"
-              className="flex items-center gap-2 py-3 text-m-label-m text-text-secondary"
+            <button
+              type="button"
+              onClick={() => {
+                setIsOpen(false)
+                onJoin()
+              }}
+              className="flex w-full items-center gap-2 py-3 text-m-label-m text-text-secondary"
             >
               <GroupIcon
                 src={icLock}
@@ -78,7 +90,7 @@ function RoomCreateMenu() {
                 bleedClassName="inset-[-5%_-5.56%]"
               />
               코드로 참여하기
-            </Link>
+            </button>
           </li>
         </ul>
       )}

@@ -53,3 +53,39 @@ export type RoomDetail = {
   pageRanges: PageRange[]
   stories: Story[]
 }
+
+/** 방 만들기에서 고르는 내 책장 책 */
+export type ShelfBook = {
+  id: number
+  title: string
+  author: string
+  coverUrl?: string
+  totalPages: number
+  status: 'reading' | 'done'
+  /** 0~100 (읽는 중일 때) */
+  progress: number
+}
+
+/** 초대코드로 찾은 방 정보 */
+export type JoinableRoom = {
+  roomId: number
+  /** 하이픈 없이 대문자 (예: BDL8K2Q) */
+  code: string
+  password: string
+  name: string
+  bookTitle: string
+  author: string
+  totalPages: number
+  coverUrl?: string
+  memberCount: number
+  maxMembers: number
+}
+
+/** 방 만들기 입력값 */
+export type NewRoomInput = {
+  book: ShelfBook
+  name: string
+  totalPages: number
+  dailyGoal: number
+  password: string
+}

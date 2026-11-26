@@ -12,6 +12,14 @@ export function formatPageRange(range: PageRange, variant: 'web' | 'mobile') {
     : `p. ${pad(range.start)}-${pad(range.end)}`
 }
 
+/** 100쪽씩 끊은 구간 (마지막 구간은 책 끝까지) */
+export function toPageRanges(totalPages: number): PageRange[] {
+  return Array.from({ length: Math.ceil(totalPages / 100) }, (_, index) => ({
+    start: index * 100 + 1,
+    end: Math.min((index + 1) * 100, totalPages),
+  }))
+}
+
 export function isInRange(page: number, range: PageRange) {
   return page >= range.start && page <= range.end
 }

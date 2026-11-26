@@ -90,13 +90,15 @@ function StoryDetailView({ room, story, stories }: StoryDetailViewProps) {
 
   const membersById = new Map(room.members.map((member) => [member.id, member]))
   // TODO: 생각 목록 API 연동 (지금은 더미 + 이번 접속에서 남긴 생각)
-  const thoughts = mergeThoughts(
+  const allThoughts = mergeThoughts(
     getThoughtsMock(room.id, story.id),
     addedThoughts,
     myLikes,
     key,
     room.myId,
-  ).filter((thought) => membersById.has(thought.authorId))
+  )
+  // 내보냈거나 나간 멤버의 생각은 빼고 보여줌
+  const thoughts = allThoughts.filter((thought) => membersById.has(thought.authorId))
   const isMine = story.authorId === room.myId
   const hasReplied = isMine || Boolean(story.myRepliedAt)
   const isHidden = !hasReplied && !isPeeked && thoughts.length > 0
@@ -121,7 +123,8 @@ function StoryDetailView({ room, story, stories }: StoryDetailViewProps) {
 
   const submit = (content: string) => {
     addThought(key, {
-      id: Math.max(0, ...thoughts.map((thought) => thought.id)) + 1,
+      // 숨긴 생각까지 포함해서 번호가 겹치지 않게
+      id: Math.max(0, ...allThoughts.map((thought) => thought.id)) + 1,
       authorId: room.myId,
       content,
       createdAt: formatShortToday(),
@@ -256,9 +259,15 @@ type StoryNavProps = {
   currentId: number
 }
 
-/** 웹: 쪽 구간별로 묶은 이야기 목록 (지금 이야기 초록 테두리, 구간 접기) */
+/**
+ * 웹: 쪽 구간별로 묶은 이야기 목록 (지금 이야기 초록 테두리, 구간 접기)
+ * 아직 안 읽은 쪽의 다른 사람 이야기는 교환독서방처럼 내용을 가림
+ */
 function StoryNav({ room, stories, currentId }: StoryNavProps) {
   const [closedStarts, setClosedStarts] = useState<Set<number>>(() => new Set())
+  const myPage = room.members.find((member) => member.id === room.myId)?.readPage ?? 0
+  const isUnread = (story: Story) =>
+    story.id !== currentId && story.authorId !== room.myId && story.page > myPage
   const groups = sortRanges(room.pageRanges, 'desc')
     .map((range) => ({ range, items: getStoriesInRange(stories, range, 'desc') }))
     .filter((group) => group.items.length > 0)
@@ -307,8 +316,12 @@ function StoryNav({ room, stories, currentId }: StoryNavProps) {
                       aria-current={isCurrent ? 'page' : undefined}
                       className={`block rounded-[20px] px-5 pt-5 pb-4 text-w-body-l font-medium break-keep [overflow-wrap:anywhere] drop-shadow-bubble-m ${isCurrent ? 'border-[1.5px] border-border-green bg-green-50 text-text-default' : 'bg-surface-white text-text-secondary'}`}
                     >
-                      <span className="font-semibold text-text-green">P. {item.page}</span> 에서{' '}
-                      {item.content}
+                      <span className="font-semibold text-text-green">P. {item.page}</span>{' '}
+                      {isUnread(item) ? (
+                        <span className="text-text-weak">아직 읽지 않은 범위예요</span>
+                      ) : (
+                        <>에서 {item.content}</>
+                      )}
                     </Link>
                   </li>
                 )

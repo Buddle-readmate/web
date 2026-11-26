@@ -73,7 +73,7 @@ const DEMIAN_ROOM: RoomDetail = {
   password: '1234',
   dailyGoal: 20,
   members: [
-    { id: 1, nickname: '장원', readPage: 268 },
+    { id: 1, nickname: '김버들', readPage: 268 },
     { id: 2, nickname: '동진', readPage: 320 },
     { id: 3, nickname: '예진', readPage: 120 },
     { id: 4, nickname: '효정', readPage: 90 },
@@ -260,7 +260,7 @@ export const JOINABLE_ROOMS_MOCK: JoinableRoom[] = [
 
 /** 페이지별 이야기에 달린 생각 (피그마 "페이지별 이야기" 시안 기준, 데미안 방만) */
 const THOUGHTS_MOCK: Record<number, Thought[]> = {
-  // P. 267 홍길동 질문 (아직 내 생각 안 남김 → 가려서 보여줌)
+  // P. 267 동진 질문 (아직 내 생각 안 남김 → 가려서 보여줌)
   3: [
     {
       id: 1,
@@ -322,6 +322,34 @@ const THOUGHTS_MOCK: Record<number, Thought[]> = {
   ],
 }
 
+const SAMPLE_THOUGHTS = [
+  '이 장면에서 한참 멈춰서 다시 읽었어.',
+  '처음엔 낯설었는데 읽을수록 이해가 됐어.',
+  '나도 비슷한 경험이 있어서 더 와닿았어.',
+  '이 문장을 메모해뒀어. 오래 기억날 것 같아.',
+  '다른 사람들은 어떻게 읽었는지 궁금했는데 반가워.',
+]
+
+/**
+ * 이야기의 생각 목록
+ * 시안 예시가 있는 이야기(2·3번)는 그대로, 나머지는 이야기 정보(생각 남긴 멤버·내가 남긴 날짜)에 맞춰 만듦
+ */
 export function getThoughtsMock(roomId: number, storyId: number): Thought[] {
-  return roomId === DEMIAN_ROOM.id ? (THOUGHTS_MOCK[storyId] ?? []) : []
+  if (roomId !== DEMIAN_ROOM.id) return []
+  if (THOUGHTS_MOCK[storyId]) return THOUGHTS_MOCK[storyId]
+  const story = DEMIAN_ROOM.stories.find((item) => item.id === storyId)
+  if (!story) return []
+  // "2026.10.26" → "26.10.26"
+  const myDate = story.myRepliedAt?.slice(2)
+  const authorIds = [
+    ...(myDate && story.authorId !== MY_ID ? [MY_ID] : []),
+    ...story.replierIds.filter((id) => id !== MY_ID),
+  ]
+  return authorIds.map((authorId, index) => ({
+    id: index + 1,
+    authorId,
+    content: SAMPLE_THOUGHTS[(storyId + index) % SAMPLE_THOUGHTS.length],
+    createdAt: authorId === MY_ID && myDate ? myDate : '26.10.20',
+    likedBy: index % 2 === 0 ? [story.authorId] : [],
+  }))
 }

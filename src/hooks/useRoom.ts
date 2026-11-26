@@ -23,17 +23,24 @@ export function useRoom(roomId: number) {
 
 /**
  * 방의 이야기 목록 (더미 + 새로 등록한 이야기)
- * 이야기 상세에서 내 생각을 남겼으면 "내 생각 남김"(myRepliedAt)으로 표시
+ * 이야기 상세에서 생각이나 답글을 남겼으면
+ * "내 생각 남김"(myRepliedAt)으로 표시하고 생각 남긴 멤버(replierIds)에 나를 넣음
  */
 export function useRoomStories(room: RoomDetail): Story[] {
   const addedStories = useRoomStoryStore((state) => state.addedStories[room.id])
   const addedThoughts = useThoughtStore((state) => state.addedThoughts)
 
   return [...room.stories, ...(addedStories ?? [])].map((story) => {
-    if (story.myRepliedAt) return story
     const myThought = addedThoughts[storyKey(room.id, story.id)]?.find(
-      (thought) => thought.authorId === room.myId && thought.parentId === undefined,
+      (thought) => thought.authorId === room.myId,
     )
-    return myThought ? { ...story, myRepliedAt: `20${myThought.createdAt}` } : story
+    if (!myThought) return story
+    return {
+      ...story,
+      myRepliedAt: story.myRepliedAt ?? `20${myThought.createdAt}`,
+      replierIds: story.replierIds.includes(room.myId)
+        ? story.replierIds
+        : [...story.replierIds, room.myId],
+    }
   })
 }

@@ -48,6 +48,12 @@ const ThoughtInput = forwardRef<HTMLInputElement, ThoughtInputProps>(function Th
   }
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    // 한글 조합 중 Enter는 글자 확정용 → 멤버 고르기·등록을 하지 않음 (조합 끝난 뒤 Enter로 진행)
+    // (keyCode 229: 일부 브라우저가 조합 중 키에 주는 값)
+    if (event.nativeEvent.isComposing || event.keyCode === 229) {
+      if (event.key === 'Enter') event.preventDefault()
+      return
+    }
     if (isListOpen) {
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault()

@@ -26,7 +26,11 @@ function ThoughtList({
   onReply,
   disabled = false,
 }: ThoughtListProps) {
-  const topLevel = thoughts.filter((thought) => thought.parentId === undefined)
+  // 원래 생각이 목록에서 빠진 답글(작성자가 나간 경우 등)은 사라지지 않게 맨 위 단계로
+  const ids = new Set(thoughts.map((thought) => thought.id))
+  const topLevel = thoughts.filter(
+    (thought) => thought.parentId === undefined || !ids.has(thought.parentId),
+  )
   const repliesOf = (parentId: number) =>
     thoughts.filter((thought) => thought.parentId === parentId)
 
@@ -58,7 +62,11 @@ function ThoughtList({
               {thought.authorId === myId && <span className="text-text-weak"> (나)</span>}
             </span>
           </div>
-          <time className="shrink-0 text-w-body-m font-medium text-text-weak">
+          {/* "26.11.14" → dateTime "2026-11-14" (시안: 모바일도 15px) */}
+          <time
+            dateTime={`20${thought.createdAt.replaceAll('.', '-')}`}
+            className="shrink-0 text-w-body-m font-medium text-text-weak"
+          >
             {thought.createdAt}
           </time>
         </header>

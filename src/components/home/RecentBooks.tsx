@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import SectionHeader from '@/components/home/SectionHeader'
 import { useMouseHorizontalScroll } from '@/hooks/useMouseHorizontalScroll'
@@ -7,29 +8,36 @@ import type { RecentBook } from '@/types/home'
 // 웹 책장에 표지로 보여줄 최근 책 수 (피그마 W/Shelf/Row: 표지 4권 + 책등 칸 = 720px)
 const SHELF_COVER_COUNT = 4
 // 피그마 책장 크기: 표지 128×192, 간격 20, 책등 칸 128 → 4권 + 책등 = 720px
-const SHELF_WIDTH = 720
 const COVER_WIDTH = 128
 const COVER_HEIGHT = 192
 const SHELF_GAP = 20
 
+/** 표지 n권 + 책등 칸을 시안 크기로 놓을 때 필요한 폭 (4권이면 720px) */
+function getShelfDesignWidth(coverCount: number) {
+  return (coverCount + 1) * COVER_WIDTH + coverCount * SHELF_GAP
+}
+
 /**
- * 책장 폭 ÷ 시안 폭(720px) 비율 (최대 1)
- * 아이패드 가로처럼 책장이 좁으면 표지·간격·책등을 같은 비율로 줄여 시안 구성(4권 + 책등)을 유지
+ * 책장 실제 폭 (모바일처럼 책장이 숨겨져 아직 못 쟀으면 null)
+ * 첫 화면에서 시안 크기로 잠깐 그려졌다 줄어드는 걸 막으려고, 붙자마자 한 번 재고 폭이 바뀔 때도 바로 반영
  */
-function useShelfScale() {
-  const [scale, setScale] = useState(1)
+function useShelfWidth() {
+  const [width, setWidth] = useState<number | null>(null)
   const ref = useCallback((node: HTMLDivElement | null) => {
     if (!node) return
+    // 숨겨진 상태(폭 0)는 무시
+    const initialWidth = node.getBoundingClientRect().width
+    if (initialWidth > 0) setWidth(initialWidth)
     const observer = new ResizeObserver(([entry]) => {
-      const width = entry.contentRect.width
-      // 모바일에서는 책장이 숨겨져 폭이 0이라 계산하지 않음
-      if (width === 0) return
-      setScale(Math.min(1, width / SHELF_WIDTH))
+      const nextWidth = entry.contentRect.width
+      if (nextWidth === 0) return
+      // 아이패드를 세로→가로로 돌려 책장이 처음 보일 때도 줄어든 크기로 바로 그려지게 함
+      flushSync(() => setWidth(nextWidth))
     })
     observer.observe(node)
     return () => observer.disconnect()
   }, [])
-  return [ref, scale] as const
+  return [ref, width] as const
 }
 
 // 웹 책장 마지막 칸의 책등 (피그마 W/Shelf/Row 일러스트 기준)
@@ -100,8 +108,11 @@ function BookCover({ book, className = '' }: { book?: RecentBook; className?: st
 function RecentBooks({ books, className = '' }: RecentBooksProps) {
   const navigate = useNavigate()
   const listRef = useMouseHorizontalScroll<HTMLUListElement>()
-  const [shelfRef, shelfScale] = useShelfScale()
+  const [shelfRef, shelfWidth] = useShelfWidth()
   const shelfBooks = books.slice(0, SHELF_COVER_COUNT)
+  // 놓인 책이 시안 크기로 다 들어가면 그대로(1), 모자라면 같은 비율로 줄임
+  const shelfScale =
+    shelfWidth === null ? 1 : Math.min(1, shelfWidth / getShelfDesignWidth(shelfBooks.length))
   const coverSize = { width: COVER_WIDTH * shelfScale, height: COVER_HEIGHT * shelfScale }
   const shelfGap = SHELF_GAP * shelfScale
 
@@ -204,8 +215,7 @@ function RecentBooks({ books, className = '' }: RecentBooksProps) {
                   key={book.id}
                   className="shrink-0 truncate text-w-body-m font-medium text-text-default"
                   style={{ width: coverSize.width }}
-                  // 표지가 줄어 제목이 말줄임되면 마우스를 올려 전체 제목 확인
-                  title={book.title}
+                  // TODO: 표지가 줄어 말줄임된 제목 전체를 보여줄지 디자인 확인 필요 (PR #49에 질문 남김)
                 >
                   {book.title}
                 </li>
